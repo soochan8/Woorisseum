@@ -18,7 +18,7 @@ Android와 iOS의 UI·비즈니스 로직을 공유하는 Kotlin Multiplatform /
 | `feature:budget` | 월별 예산·통계 화면과 ViewModel |
 | `feature:shopping` | 공유 장보기 화면과 ViewModel |
 
-기능 모듈은 빌드 설정만 준비된 상태이며 실제 화면은 아직 구현하지 않았습니다. 기존 예제 화면은 `shared`에 유지하고, 공통 테마는 `core:designsystem`에서 사용합니다.
+기능 모듈은 빌드 설정과 `commonMain`·`commonTest` 소스 디렉터리를 준비한 상태이며 실제 화면은 아직 구현하지 않았습니다. 빈 소스 디렉터리는 `.gitkeep`으로 유지합니다. 기존 예제 화면은 `shared`에 유지하고, 공통 테마는 `core:designsystem`에서 사용합니다.
 
 ## 의존 방향
 
@@ -40,13 +40,13 @@ androidApp / iosApp → shared → feature:* → core:domain
 
 버전과 Maven 좌표는 `gradle/libs.versions.toml`에서 관리합니다. Kotlin·CMP·AGP·Gradle·SDK와 Material3 버전은 생성 시 설정을 유지했습니다. Material3는 기존 `1.12.0-alpha03`이므로 안정 버전으로 변경한 상태가 아닙니다.
 
-`build-logic`의 convention plugin으로 반복 설정을 공유합니다.
+`build-logic`의 convention plugin으로 반복되는 타깃·컴파일러 설정을 공유합니다. 모듈 간 의존성과 라이브러리·테스트 의존성은 각 모듈의 `build.gradle.kts`에 직접 선언합니다. 버전은 version catalog에서 공통으로 관리합니다.
 
 | 플러그인 | 공통 설정 |
 | --- | --- |
-| `woorisseum.kmp.library` | KMP, Android KMP library, iOS 타깃, Android SDK·namespace·JVM 11 바이트코드, Kotlin Test·Coroutines Test |
-| `woorisseum.compose.library` | KMP 설정 + Compose compiler·UI·Material3·리소스·미리보기 |
-| `woorisseum.compose.feature` | Compose 설정 + domain·designsystem, ViewModel·Lifecycle·Koin, Coroutines·Serialization |
+| `woorisseum.kmp.library` | KMP, Android KMP library, iOS 타깃, Android SDK·namespace·JVM 11 바이트코드 |
+| `woorisseum.compose.library` | KMP 설정 + Compose·Compose compiler 플러그인, Android 리소스 활성화 |
+| `woorisseum.compose.feature` | Compose 설정 + Kotlin Serialization 플러그인 |
 
 추가 라이브러리:
 
@@ -79,8 +79,51 @@ Gradle 실행 JVM은 `gradle/gradle-daemon-jvm.properties`의 JDK 21을 사용�
 
 앱 실행은 Android Studio의 Android 실행 구성 또는 Xcode의 `iosApp/iosApp.xcodeproj`를 사용합니다. Xcode 빌드 단계는 기존 `:shared:embedAndSignAppleFrameworkForXcode` 연결을 유지합니다.
 
-새 기능 모듈은 `feature/<name>/build.gradle.kts`에 아래 플러그인을 적용하고, `settings.gradle.kts`와 `shared`의 의존성에 등록합니다.
+새 기능 모듈은 기존 `feature/auth/build.gradle.kts`를 기준으로 필요한 의존성을 선언하고, `settings.gradle.kts`와 `shared`의 의존성에 등록합니다. 공통 플러그인은 아래와 같이 적용합니다.
 
 ```kotlin
 plugins { id("woorisseum.compose.feature") }
 ```
+
+처음 실행은 의존성 다운로드·캐시 생성 비용이 포함됩니다. 개선 폭을 비교할 때는 동일한 소스 변경·타깃·캐시 조건에서 여러 번 측정합니다. iOS 개발에서는 `~/.konan` 캐시도 유지합니다.
+
+## 모듈 아키텍처 검사
+
+`build-logic`의 `woorisseum.module.rules` 플러그인은 직접 선언한 프로젝트 의존성과 domain의 라이브러리·플러그인을 검사합니다. KMP 플랫폼 소스셋과 테스트의 프로젝트 의존성에도 같은 모듈 경계를 적용합니다. 라이브러리를 resolve하거나 앱을 컴파일하지 않습니다.
+
+```bash
+# 현재 위반과 Baseline 비교 (파일 변경 없음)
+./gradlew moduleRules
+
+# 루트 검증 작업으로 실행
+./gradlew :check
+
+# 의도적으로 승인한 기존 위반을 Baseline에 반영
+./gradlew moduleRulesBaseline
+
+# 검사기 자체 테스트 및 Gradle 플러그인 검증
+./gradlew -p build-logic test validatePlugins
+```
+
+허용 규칙은 `build-logic/src/main/kotlin/com/woorisseum/buildlogic/ModuleRules.kt`, 기존 예외는 루트 `module-rules.txt`에서 관리합니다. 초기 Baseline에는 예외가 없습니다. 새 위반은 `+`, 해결된 기존 위반은 `-`로 표시하며 둘 다 검사가 실패합니다. 먼저 코드를 수정하고, 예외가 필요하거나 기존 예외를 해결했다면 갱신 명령을 실행해 파일 변경을 리뷰합니다. 갱신은 설명 주석을 보존합니다.
+
+새 모듈은 규칙에 명시적으로 등록해야 합니다. 미분류 모듈과 순환 의존은 Baseline으로 승인할 수 없습니다. domain 운영 의존은 Kotlin 표준 라이브러리·Coroutines·Datetime, 테스트 의존은 이에 더해 Kotlin Test·Coroutines Test를 허용합니다. domain에는 Compose·Compose compiler·Android application 플러그인을 허용하지 않습니다.
+
+루트 `check`에 검사가 연결되어 있습니다. CI에서도 `./gradlew :check` 또는 `./gradlew moduleRules`를 실행하고, Baseline 갱신 명령은 자동 실행하지 않습니다. `./gradlew check`는 하위 모듈의 동명 검증 작업도 선택할 수 있으므로 아키텍처 검사만 실행하려면 위 명령을 사용합니다. 이 검사는 iOS Xcode 호스트, 모듈 크기, 앱 동작은 검증하지 않습니다.
+
+## 소스 배치 기준
+
+각 공통 모듈의 코드와 테스트는 다음 위치에 추가합니다.
+
+```text
+<module>/src/commonMain/kotlin/com/woorisseum/<module-package>/
+<module>/src/commonTest/kotlin/com/woorisseum/<module-package>/
+```
+
+- feature: `screen`, `viewmodel`, UI 상태를 위한 `model`, 기능 DI를 위한 `di` 패키지
+- domain: 기능별 패키지 아래 `model`, `repository`, 필요한 `usecase` 패키지
+- data: 기능별 패키지 아래 `repository`, `datasource`, DTO를 위한 `model`, `mapper`, `di` 패키지
+- designsystem: `theme`, 공통 UI를 위한 `component` 패키지
+- shared: 기능 간 화면 이동을 위한 `navigation`, 의존성 조립을 위한 `di` 패키지
+
+세부 패키지와 플랫폼 전용 `androidMain`·`iosMain` 파일은 실제 구현이 필요할 때 추가합니다. 화면 하나마다 Gradle 모듈을 추가하지 않습니다.
