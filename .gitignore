@@ -17,3 +17,16 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# Kotlin/Native cache when configured inside the repository
+.konan/
+
+# Local Xcode build, archive and test outputs
+DerivedData/
+*.xcarchive/
+*.xcresult/
+
+# JVM diagnostic dumps
+*.hprof
+hs_err_pid*.log
+replay_pid*.log
