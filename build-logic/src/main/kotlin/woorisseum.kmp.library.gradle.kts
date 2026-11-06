@@ -18,10 +18,4 @@ kotlin {
         compilerOptions { jvmTarget = JvmTarget.JVM_11 }
         withHostTest { isIncludeAndroidResources = false }
     }
-    sourceSets {
-        commonTest.dependencies {
-            implementation(catalog.findLibrary("kotlin-test").get())
-            implementation(catalog.findLibrary("kotlinx-coroutines-test").get())
-        }
-    }
 }

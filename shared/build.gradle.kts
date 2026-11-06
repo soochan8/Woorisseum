@@ -28,11 +28,24 @@ kotlin {
             implementation(project(":feature:transaction"))
             implementation(project(":feature:budget"))
             implementation(project(":feature:shopping"))
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.uiToolingPreview)
+
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.koin.core)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.compose)
         }
-        commonTest.dependencies { implementation(libs.koin.test) }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.koin.test)
+        }
         getByName("androidDeviceTest").dependencies {
             implementation(libs.androidx.testRunner)
         }
