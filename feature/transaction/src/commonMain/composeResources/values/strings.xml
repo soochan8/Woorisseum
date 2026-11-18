@@ -16,8 +16,13 @@
     <string name="expense_unknown_merchant">사용처 없음</string>
     <string name="expense_empty_title">아직 기록한 지출이 없어요</string>
     <string name="expense_empty_description">첫 지출부터 가볍게 남겨보세요</string>
-    <string name="expense_filter_empty_title">이 분류의 지출이 없어요</string>
-    <string name="expense_filter_empty_description">다른 분류를 선택해 보세요</string>
+    <string name="expense_filter_empty_title">조건에 맞는 지출이 없어요</string>
+    <string name="expense_filter_empty_description">기간·분류·결제수단을 바꾸거나 필터를 초기화해 보세요</string>
+    <string name="expense_filter_date_all">월 전체</string>
+    <string name="expense_filter_payment_all">결제수단 전체</string>
+    <string name="expense_filter_date_range">%1$d.%2$d – %3$d.%4$d</string>
+    <string name="expense_filter_date_title">%1$d년 %2$d월 기간 선택</string>
+    <string name="expense_filter_reset">필터 초기화</string>
     <string name="expense_add">지출 기록</string>
     <string name="expense_entry_title">지출 기록</string>
     <string name="expense_back">뒤로</string>

@@ -7,6 +7,8 @@ import com.woorisseum.core.domain.transaction.model.ExpenseCategory
 import com.woorisseum.feature.transaction.model.ExpenseDayUiModel
 import com.woorisseum.feature.transaction.model.ExpenseItemUiModel
 import com.woorisseum.feature.transaction.model.ExpenseListUiState
+import com.woorisseum.feature.transaction.model.ExpenseListFilters
+import com.woorisseum.feature.transaction.model.ExpensePaymentFilter
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
 
@@ -34,11 +36,27 @@ private fun ExpenseListDarkPreview() {
     }
 }
 
+@Preview(name = "지출 목록 · 필터 결과 없음", widthDp = 390, heightDp = 800, locale = "ko")
+@Composable
+private fun ExpenseListFilteredEmptyPreview() {
+    WoorisseumTheme(darkTheme = false) {
+        ExpenseListScreen(
+            state = previewExpenseListState().copy(
+                expenseCount = 0,
+                dayGroups = emptyList(),
+                filters = ExpenseListFilters(paymentMethod = ExpensePaymentFilter.Cash),
+            ),
+            onIntent = {},
+        )
+    }
+}
+
 // 시안 확인 전용 데이터다. 앱 실행이나 실제 저장소의 초기 데이터로 사용하지 않는다.
 private fun previewExpenseListState() = ExpenseListUiState(
     month = YearMonth(2026, 11),
     totalAmountText = "981,700",
     expenseCount = 8,
+    hasExpensesInMonth = true,
     periodText = "11월 1일 — 13일",
     dayGroups = listOf(
         ExpenseDayUiModel(

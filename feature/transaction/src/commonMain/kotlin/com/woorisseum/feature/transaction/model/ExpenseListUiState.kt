@@ -1,6 +1,7 @@
 package com.woorisseum.feature.transaction.model
 
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
+import com.woorisseum.core.domain.transaction.model.PaymentMethod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
 
@@ -10,7 +11,10 @@ data class ExpenseListUiState(
     val totalAmountText: String = "0",
     val expenseCount: Int = 0,
     val periodText: String = "",
-    val selectedCategory: ExpenseCategory? = null,
+    val filters: ExpenseListFilters = ExpenseListFilters(),
+    // 조회 연결 시 필터 적용 전 월별 원본 목록으로 결정한다.
+    val hasExpensesInMonth: Boolean = false,
+    val availablePaymentMethods: List<PaymentMethod> = listOf(PaymentMethod.Cash, PaymentMethod.BankTransfer),
     val dayGroups: List<ExpenseDayUiModel> = emptyList(),
 )
 

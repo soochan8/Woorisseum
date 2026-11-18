@@ -1,0 +1,199 @@
+package com.woorisseum.feature.transaction.screen
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.woorisseum.core.domain.transaction.model.PaymentMethod
+import com.woorisseum.feature.transaction.model.ExpenseDateRange
+import com.woorisseum.feature.transaction.model.ExpenseListUiIntent
+import com.woorisseum.feature.transaction.model.ExpenseListUiState
+import com.woorisseum.feature.transaction.model.toExpensePaymentFilter
+import com.woorisseum.feature.transaction.resources.*
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.YearMonth
+import kotlinx.datetime.number
+import org.jetbrains.compose.resources.stringResource
+
+/** 필터 입력 UI다. 조건의 변경·검증은 ViewModel에 맡긴다. */
+@Composable
+internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseListUiIntent) -> Unit) {
+    var showDates by rememberSaveable(state.month.toString()) { mutableStateOf(false) }
+    var showPayments by rememberSaveable { mutableStateOf(false) }
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilterChip(
+            selected = state.filters.dateRange != null,
+            onClick = { showDates = true },
+            label = {
+                Text(state.filters.dateRange?.let {
+                    stringResource(Res.string.expense_filter_date_range, it.start.month.number, it.start.day,
+                        it.endInclusive.month.number, it.endInclusive.day)
+                } ?: stringResource(Res.string.expense_filter_date_all))
+            },
+        )
+        FilterChip(
+            selected = state.filters.paymentMethod != null,
+            onClick = { showPayments = true },
+            label = {
+                val selected = state.availablePaymentMethods.firstOrNull {
+                    it.toExpensePaymentFilter() == state.filters.paymentMethod
+                }
+                Text(
+                    selected?.let { paymentLabel(it) } ?: stringResource(Res.string.expense_filter_payment_all),
+                    modifier = Modifier.widthIn(max = 160.dp), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            },
+        )
+        if (state.filters.isActive) {
+            TextButton(onClick = { onIntent(ExpenseListUiIntent.ResetFilters) }) {
+                Text(stringResource(Res.string.expense_filter_reset))
+            }
+        }
+    }
+    if (showDates) {
+        ExpenseDateRangeDialog(
+            month = state.month,
+            selectedRange = state.filters.dateRange,
+            onDismiss = { showDates = false },
+            onSelect = { start, end ->
+                onIntent(ExpenseListUiIntent.SelectDateRange(start, end))
+                showDates = false
+            },
+        )
+    }
+    if (showPayments) {
+        AlertDialog(
+            onDismissRequest = { showPayments = false },
+            title = { Text(stringResource(Res.string.expense_payment_label)) },
+            text = {
+                Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()).selectableGroup()) {
+                    // 선택지 목록을 확장하면 카드도 같은 UI에서 표시한다. 카드명은 표시 용도로만 사용한다.
+                    (listOf(null) + state.availablePaymentMethods).forEach { payment ->
+                        val filter = payment?.toExpensePaymentFilter()
+                        val selected = filter == state.filters.paymentMethod
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                                .selectable(selected, role = Role.RadioButton, onClick = {
+                                    onIntent(ExpenseListUiIntent.SelectPaymentMethod(filter))
+                                    showPayments = false
+                                }).padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = selected, onClick = null)
+                            Text(payment?.let { paymentLabel(it) }
+                                ?: stringResource(Res.string.expense_filter_payment_all))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPayments = false }) { Text(stringResource(Res.string.expense_cancel)) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun paymentLabel(payment: PaymentMethod): String = when (payment) {
+    PaymentMethod.Cash -> stringResource(Res.string.expense_payment_cash)
+    PaymentMethod.BankTransfer -> stringResource(Res.string.expense_payment_transfer)
+    is PaymentMethod.Card -> payment.name
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExpenseDateRangeDialog(
+    month: YearMonth,
+    selectedRange: ExpenseDateRange?,
+    onDismiss: () -> Unit,
+    onSelect: (LocalDate, LocalDate) -> Unit,
+) {
+    val selectableDates = remember(month) {
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                val date = LocalDate.fromEpochDays(utcTimeMillis / 86_400_000L)
+                return date >= month.firstDay && date <= month.lastDay
+            }
+        }
+    }
+    val picker = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = selectedRange?.start?.toEpochDays()?.times(86_400_000L),
+        initialSelectedEndDateMillis = selectedRange?.endInclusive?.toEpochDays()?.times(86_400_000L),
+        initialDisplayedMonthMillis = month.firstDay.toEpochDays() * 86_400_000L,
+        yearRange = month.year..month.year,
+        selectableDates = selectableDates,
+    )
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(
+            modifier = Modifier.safeDrawingPadding().padding(16.dp).widthIn(max = 560.dp)
+                .fillMaxWidth().heightIn(max = 600.dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column {
+                Text(
+                    stringResource(Res.string.expense_filter_date_title, month.year, month.month.number),
+                    modifier = Modifier.padding(20.dp), style = MaterialTheme.typography.titleMedium,
+                )
+                DateRangePicker(
+                    state = picker, modifier = Modifier.weight(1f), title = null, headline = null,
+                    showModeToggle = false,
+                )
+                Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = { onSelect(month.firstDay, month.lastDay) }) {
+                        Text(stringResource(Res.string.expense_filter_date_all))
+                    }
+                    TextButton(onClick = onDismiss) { Text(stringResource(Res.string.expense_cancel)) }
+                    TextButton(
+                        enabled = picker.selectedStartDateMillis != null && picker.selectedEndDateMillis != null,
+                        onClick = {
+                            val start = picker.selectedStartDateMillis
+                            val end = picker.selectedEndDateMillis
+                            if (start != null && end != null) onSelect(
+                                LocalDate.fromEpochDays(start / 86_400_000L),
+                                LocalDate.fromEpochDays(end / 86_400_000L),
+                            )
+                        },
+                    ) { Text(stringResource(Res.string.expense_confirm)) }
+                }
+            }
+        }
+    }
+}

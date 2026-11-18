@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.woorisseum.feature.transaction.model.ExpenseListUiEffect
 import com.woorisseum.feature.transaction.model.ExpenseListUiIntent
 import com.woorisseum.feature.transaction.model.ExpenseListUiState
+import com.woorisseum.feature.transaction.model.ExpenseListFilters
+import com.woorisseum.feature.transaction.model.ExpenseDateRange
+import com.woorisseum.feature.transaction.model.toExpensePaymentFilter
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -34,7 +37,27 @@ class ExpenseListViewModel(initialMonth: YearMonth) : ViewModel() {
                 emptyMonthState(it.month.plusMonth(), it)
             }
             is ExpenseListUiIntent.SelectCategory -> _uiState.update {
-                it.copy(selectedCategory = intent.category)
+                it.copy(filters = it.filters.copy(category = intent.category))
+            }
+            is ExpenseListUiIntent.SelectDateRange -> _uiState.update { state ->
+                if (intent.start > intent.endInclusive || intent.start < state.month.firstDay ||
+                    intent.endInclusive > state.month.lastDay
+                ) state else {
+                    // 월 전체를 선택하면 별도 날짜 필터가 없는 상태로 정규화한다.
+                    val range = if (intent.start == state.month.firstDay && intent.endInclusive == state.month.lastDay) {
+                        null
+                    } else ExpenseDateRange(intent.start, intent.endInclusive)
+                    state.copy(filters = state.filters.copy(dateRange = range))
+                }
+            }
+            is ExpenseListUiIntent.SelectPaymentMethod -> _uiState.update { state ->
+                if (intent.paymentMethod == null || state.availablePaymentMethods.any {
+                    it.toExpensePaymentFilter() == intent.paymentMethod
+                }) state.copy(filters = state.filters.copy(paymentMethod = intent.paymentMethod))
+                else state
+            }
+            ExpenseListUiIntent.ResetFilters -> _uiState.update {
+                it.copy(filters = ExpenseListFilters())
             }
             ExpenseListUiIntent.AddExpense -> viewModelScope.launch {
                 _effects.emit(ExpenseListUiEffect.NavigateToAddExpense)
@@ -45,9 +68,14 @@ class ExpenseListViewModel(initialMonth: YearMonth) : ViewModel() {
     private fun emptyMonthState(
         month: YearMonth,
         previousState: ExpenseListUiState? = null,
-    ): ExpenseListUiState = ExpenseListUiState(
-        month = month,
-        periodText = "${month.month.number}.1 – ${month.month.number}.${month.numberOfDays}",
-        selectedCategory = previousState?.selectedCategory,
-    )
+    ): ExpenseListUiState {
+        val state = ExpenseListUiState(
+            month = month,
+            periodText = "${month.month.number}.1 – ${month.month.number}.${month.numberOfDays}",
+            filters = previousState?.filters?.copy(dateRange = null) ?: ExpenseListFilters(),
+        )
+        return if (previousState == null) state else state.copy(
+            availablePaymentMethods = previousState.availablePaymentMethods,
+        )
+    }
 }

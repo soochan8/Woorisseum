@@ -73,12 +73,13 @@ fun ExpenseListScreen(
         Column(Modifier.fillMaxSize().padding(contentPadding)) {
             ExpenseHeader(state = state, onIntent = onIntent)
             ExpenseCategoryTabs(
-                selectedCategory = state.selectedCategory,
+                selectedCategory = state.filters.category,
                 onSelect = { onIntent(ExpenseListUiIntent.SelectCategory(it)) },
             )
+            ExpenseListFilterBar(state = state, onIntent = onIntent)
             if (state.dayGroups.isEmpty()) {
                 ExpenseEmptyContent(
-                    isFiltered = state.selectedCategory != null,
+                    isFiltered = state.hasExpensesInMonth && state.filters.isActive,
                     modifier = Modifier.weight(1f),
                 )
             } else {
