@@ -2,6 +2,15 @@ plugins {
     id("woorisseum.compose.feature")
 }
 
+compose.resources {
+    packageOfResClass = "com.woorisseum.feature.transaction.resources"
+}
+
+// Android Studio에서 이 모듈의 공통 Compose Preview를 렌더링한다.
+dependencies {
+    androidRuntimeClasspath(libs.compose.uiTooling)
+}
+
 kotlin {
     sourceSets {
         commonMain.dependencies {
@@ -19,6 +28,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

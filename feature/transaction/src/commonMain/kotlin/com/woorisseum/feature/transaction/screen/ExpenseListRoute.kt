@@ -1,0 +1,42 @@
+package com.woorisseum.feature.transaction.screen
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.woorisseum.feature.transaction.model.ExpenseListUiEffect
+import com.woorisseum.feature.transaction.viewmodel.ExpenseListViewModel
+import org.koin.compose.viewmodel.koinViewModel
+
+/** DI·상태 수집·이동 요청을 연결한다. Screen은 ViewModel을 알지 못한다. */
+@Composable
+fun ExpenseListRoute(
+    onAddExpense: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ExpenseListViewModel = koinViewModel(),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnAddExpense by rememberUpdatedState(onAddExpense)
+
+    LaunchedEffect(viewModel, lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.effects.collect { effect ->
+                when (effect) {
+                    ExpenseListUiEffect.NavigateToAddExpense -> currentOnAddExpense()
+                }
+            }
+        }
+    }
+
+    ExpenseListScreen(
+        state = state,
+        onIntent = viewModel::onIntent,
+        modifier = modifier,
+    )
+}

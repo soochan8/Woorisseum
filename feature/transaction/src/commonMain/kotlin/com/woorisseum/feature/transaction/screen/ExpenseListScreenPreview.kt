@@ -1,0 +1,81 @@
+package com.woorisseum.feature.transaction.screen
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import com.woorisseum.core.designsystem.theme.WoorisseumTheme
+import com.woorisseum.core.domain.transaction.model.ExpenseCategory
+import com.woorisseum.feature.transaction.model.ExpenseDayUiModel
+import com.woorisseum.feature.transaction.model.ExpenseItemUiModel
+import com.woorisseum.feature.transaction.model.ExpenseListUiState
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.YearMonth
+
+@Preview(name = "지출 목록 · 일상형", widthDp = 390, heightDp = 800, locale = "ko")
+@Composable
+private fun ExpenseListContentPreview() {
+    WoorisseumTheme(darkTheme = false) {
+        ExpenseListScreen(state = previewExpenseListState(), onIntent = {})
+    }
+}
+
+@Preview(name = "지출 목록 · 빈 상태", widthDp = 390, heightDp = 800, locale = "ko")
+@Composable
+private fun ExpenseListEmptyPreview() {
+    WoorisseumTheme(darkTheme = false) {
+        ExpenseListScreen(state = ExpenseListUiState(month = YearMonth(2026, 11)), onIntent = {})
+    }
+}
+
+@Preview(name = "지출 목록 · 다크", widthDp = 390, heightDp = 800, locale = "ko")
+@Composable
+private fun ExpenseListDarkPreview() {
+    WoorisseumTheme(darkTheme = true) {
+        ExpenseListScreen(state = previewExpenseListState(), onIntent = {})
+    }
+}
+
+// 시안 확인 전용 데이터다. 앱 실행이나 실제 저장소의 초기 데이터로 사용하지 않는다.
+private fun previewExpenseListState() = ExpenseListUiState(
+    month = YearMonth(2026, 11),
+    totalAmountText = "981,700",
+    expenseCount = 8,
+    periodText = "11월 1일 — 13일",
+    dayGroups = listOf(
+        ExpenseDayUiModel(
+            date = LocalDate(2026, 11, 13),
+            dateLabel = "13일 금요일",
+            totalAmountText = "37,300",
+            expenses = listOf(
+                ExpenseItemUiModel("preview-1", "동네 정육점", "32,800", ExpenseCategory.VARIABLE, "현대카드"),
+                ExpenseItemUiModel("preview-2", "이디야커피", "4,500", ExpenseCategory.VARIABLE, "현금"),
+            ),
+        ),
+        ExpenseDayUiModel(
+            date = LocalDate(2026, 11, 12),
+            dateLabel = "12일 목요일",
+            totalAmountText = "107,400",
+            expenses = listOf(
+                ExpenseItemUiModel("preview-3", "이마트", "68,400", ExpenseCategory.VARIABLE, "신한카드"),
+                ExpenseItemUiModel("preview-4", "무신사", "39,000", ExpenseCategory.IMPULSE, "현대카드"),
+            ),
+        ),
+        ExpenseDayUiModel(
+            date = LocalDate(2026, 11, 11),
+            dateLabel = "11일 수요일",
+            totalAmountText = "75,000",
+            expenses = listOf(
+                ExpenseItemUiModel("preview-5", "휴대폰 요금", "59,000", ExpenseCategory.FIXED, "계좌이체"),
+                ExpenseItemUiModel("preview-6", "김밥천국", "16,000", ExpenseCategory.VARIABLE, "신한카드"),
+            ),
+        ),
+        ExpenseDayUiModel(
+            date = LocalDate(2026, 11, 10),
+            dateLabel = "10일 화요일",
+            totalAmountText = "762,000",
+            expenses = listOf(
+                ExpenseItemUiModel("preview-7", "월세", "750,000", ExpenseCategory.FIXED, "계좌이체"),
+                ExpenseItemUiModel("preview-8", "동네 세탁소", "12,000", ExpenseCategory.VARIABLE, "현금"),
+            ),
+        ),
+    ),
+)
