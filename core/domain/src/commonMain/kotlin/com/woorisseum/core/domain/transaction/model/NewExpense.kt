@@ -9,4 +9,6 @@ data class NewExpense(
     val merchant: String?,
     val category: ExpenseCategory,
     val paymentMethod: PaymentMethod,
+    /** 선택 입력 메모. 미입력은 null로 전달한다. */
+    val memo: String? = null,
 )
