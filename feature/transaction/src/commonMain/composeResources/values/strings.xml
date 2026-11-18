@@ -44,4 +44,5 @@
     <string name="expense_storage_unavailable">입력은 확인했어요. 아직 저장 기능이 연결되지 않아 기록되지 않았어요.</string>
     <string name="expense_confirm">확인</string>
     <string name="expense_cancel">취소</string>
+    <string name="expense_memo_label">메모 (선택)</string>
 </resources>
