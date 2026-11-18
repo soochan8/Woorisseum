@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
 
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
             implementation(libs.koin.core)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.kotlinx.serialization.json)

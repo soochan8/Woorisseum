@@ -1,5 +1,6 @@
 <resources>
     <string name="expense_list_title">지출</string>
+    <string name="expense_view_budget">예산 보기</string>
     <string name="expense_app_name">우리씀</string>
     <string name="expense_month">%1$d년 %2$d월</string>
     <string name="expense_month_total">%1$d월에 쓴 돈</string>

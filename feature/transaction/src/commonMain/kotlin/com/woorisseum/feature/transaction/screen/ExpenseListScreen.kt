@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -135,11 +136,9 @@ private fun ExpenseHeader(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
             )
-            Text(
-                text = stringResource(Res.string.expense_app_name),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelMedium,
-            )
+            TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewBudget) }) {
+                Text(stringResource(Res.string.expense_view_budget))
+            }
         }
         Row(
             modifier = Modifier.fillMaxWidth(),

@@ -14,8 +14,8 @@ val transactionModule = module {
     viewModel {
         ExpenseEntryViewModel(initialDate = Clock.System.todayIn(TimeZone.currentSystemDefault()))
     }
-    viewModel {
+    viewModel { parameters ->
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-        ExpenseListViewModel(initialMonth = YearMonth(today.year, today.month))
+        ExpenseListViewModel(initialMonth = parameters.getOrNull<YearMonth>() ?: YearMonth(today.year, today.month))
     }
 }
