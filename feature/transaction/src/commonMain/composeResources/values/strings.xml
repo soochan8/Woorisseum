@@ -44,5 +44,15 @@
     <string name="expense_storage_unavailable">입력은 확인했어요. 아직 저장 기능이 연결되지 않아 기록되지 않았어요.</string>
     <string name="expense_confirm">확인</string>
     <string name="expense_cancel">취소</string>
+    <string name="expense_detail_title">지출 내역</string>
+    <string name="expense_edit_title">지출 수정</string>
+    <string name="expense_edit_action">수정하기</string>
+    <string name="expense_edit_submit">수정 완료</string>
+    <string name="expense_lookup_unavailable_title">조회 연결 준비 중이에요</string>
+    <string name="expense_lookup_unavailable_description">지출 조회 기능이 연결되면 내역을 확인하고 수정할 수 있어요.</string>
+    <string name="expense_edit_storage_unavailable">입력은 확인했어요. 아직 수정 기능이 연결되지 않아 변경 내용은 저장되지 않았어요.</string>
+    <string name="expense_edit_notice">실제 저장은 연결 후 제공돼요. 취소하면 변경 내용은 반영되지 않아요.</string>
     <string name="expense_memo_label">메모 (선택)</string>
+    <string name="expense_memo_title">메모</string>
+    <string name="expense_memo_empty">남긴 메모가 없어요</string>
 </resources>
