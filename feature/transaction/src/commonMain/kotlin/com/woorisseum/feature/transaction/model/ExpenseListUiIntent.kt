@@ -18,6 +18,8 @@ sealed interface ExpenseListUiIntent {
 
     data object ResetFilters : ExpenseListUiIntent
 
+    data class OpenExpense(val expenseId: String) : ExpenseListUiIntent
+
     data object AddExpense : ExpenseListUiIntent
     data object ViewBudget : ExpenseListUiIntent
 }

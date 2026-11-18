@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -111,7 +112,7 @@ fun ExpenseListScreen(
                             key = { "expense:${it.id}" },
                             contentType = { "expense-row" },
                         ) { expense ->
-                            ExpenseRow(expense = expense)
+                            ExpenseRow(expense = expense, onClick = { onIntent(ExpenseListUiIntent.OpenExpense(expense.id)) })
                         }
                     }
                 }
@@ -245,9 +246,9 @@ private fun ExpenseCategoryTabs(
 }
 
 @Composable
-private fun ExpenseRow(expense: ExpenseItemUiModel) {
+private fun ExpenseRow(expense: ExpenseItemUiModel, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,
     ) {

@@ -19,6 +19,7 @@ import kotlinx.datetime.YearMonth
 @Composable
 fun ExpenseListRoute(
     onAddExpense: () -> Unit,
+    onOpenExpense: (String) -> Unit,
     onOpenBudget: (YearMonth) -> Unit,
     initialMonth: YearMonth? = null,
     modifier: Modifier = Modifier,
@@ -26,6 +27,7 @@ fun ExpenseListRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnOpenExpense by rememberUpdatedState(onOpenExpense)
     val currentOnAddExpense by rememberUpdatedState(onAddExpense)
     val currentOnOpenBudget by rememberUpdatedState(onOpenBudget)
 
@@ -33,6 +35,7 @@ fun ExpenseListRoute(
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.effects.collect { effect ->
                 when (effect) {
+                    is ExpenseListUiEffect.NavigateToDetail -> currentOnOpenExpense(effect.expenseId)
                     ExpenseListUiEffect.NavigateToAddExpense -> currentOnAddExpense()
                     is ExpenseListUiEffect.NavigateToBudget -> currentOnOpenBudget(effect.month)
                 }

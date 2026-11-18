@@ -59,6 +59,9 @@ class ExpenseListViewModel(initialMonth: YearMonth) : ViewModel() {
             ExpenseListUiIntent.ResetFilters -> _uiState.update {
                 it.copy(filters = ExpenseListFilters())
             }
+            is ExpenseListUiIntent.OpenExpense -> viewModelScope.launch {
+                _effects.emit(ExpenseListUiEffect.NavigateToDetail(intent.expenseId))
+            }
             ExpenseListUiIntent.AddExpense -> viewModelScope.launch {
                 _effects.emit(ExpenseListUiEffect.NavigateToAddExpense)
             }
