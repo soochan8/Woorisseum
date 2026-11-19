@@ -1,147 +1,180 @@
 package com.woorisseum.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
 import androidx.navigation.toRoute
-import com.woorisseum.feature.shopping.screen.ShoppingListRoute
-import com.woorisseum.feature.shopping.screen.ShoppingHistoryRoute
 import com.woorisseum.feature.budget.screen.MonthlyBudgetRoute
-import com.woorisseum.feature.transaction.screen.ExpenseDetailRoute
-import com.woorisseum.feature.transaction.screen.ExpenseEditRoute
-import com.woorisseum.feature.transaction.fixed.FixedExpenseListRoute
-import com.woorisseum.feature.transaction.fixed.FixedExpenseEditorRoute
-import com.woorisseum.feature.transaction.screen.ExpenseEntryRoute
-import com.woorisseum.feature.transaction.screen.ExpenseListRoute
-import com.woorisseum.feature.transaction.card.CardListRoute
+import com.woorisseum.feature.shopping.screen.ShoppingHistoryRoute
+import com.woorisseum.feature.shopping.screen.ShoppingListRoute
 import com.woorisseum.feature.transaction.card.CardEditorRoute
-import kotlinx.serialization.Serializable
+import com.woorisseum.feature.transaction.card.CardListRoute
+import com.woorisseum.feature.transaction.fixed.FixedExpenseEditorRoute
+import com.woorisseum.feature.transaction.fixed.FixedExpenseListRoute
+import com.woorisseum.feature.transaction.screen.*
+import com.woorisseum.resources.*
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
+import kotlinx.datetime.todayIn
+import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
-@Serializable
-private data class ExpenseListDestination(val year: Int? = null, val month: Int? = null)
+@Serializable private data object ExpenseListDestination
+@Serializable private data object ShoppingListDestination
+@Serializable private data object MonthlyBudgetDestination
+@Serializable private data object ManagementDestination
+@Serializable private data object ShoppingHistoryDestination
+@Serializable private data object ExpenseEntryDestination
+@Serializable private data class ExpenseDetailDestination(val expenseId: String)
+@Serializable private data class ExpenseEditDestination(val expenseId: String)
+@Serializable private data class FixedExpenseListDestination(val year: Int, val month: Int)
+@Serializable private data class FixedExpenseEditorDestination(val year: Int, val month: Int, val planId: String? = null)
+@Serializable private data object CardListDestination
+@Serializable private data class CardEditorDestination(val cardId: String? = null)
 
-@Serializable
-private data class ExpenseDetailDestination(val expenseId: String)
+private const val REQUESTED_EXPENSE_MONTH = "requestedExpenseMonth"
 
-@Serializable
-private data class ExpenseEditDestination(val expenseId: String)
+private enum class AppTab(val route: Any, val label: StringResource, val icon: DrawableResource) {
+    Expenses(ExpenseListDestination, Res.string.nav_expenses, Res.drawable.nav_expenses),
+    Budget(MonthlyBudgetDestination, Res.string.nav_budget, Res.drawable.nav_budget),
+    Shopping(ShoppingListDestination, Res.string.nav_shopping, Res.drawable.nav_shopping),
+    Management(ManagementDestination, Res.string.nav_management, Res.drawable.nav_management);
 
-@Serializable
-private data class FixedExpenseListDestination(val year: Int, val month: Int)
+    fun matches(destination: NavDestination?): Boolean = when (this) {
+        Expenses -> destination?.hasRoute<ExpenseListDestination>() == true
+        Budget -> destination?.hasRoute<MonthlyBudgetDestination>() == true
+        Shopping -> destination?.hasRoute<ShoppingListDestination>() == true
+        Management -> destination?.hasRoute<ManagementDestination>() == true
+    }
+}
 
-@Serializable
-private data class FixedExpenseEditorDestination(val year: Int, val month: Int, val planId: String? = null)
+/** 선택된 탭을 다시 눌러도 초기화하지 않는다. 탭별 back stack과 Compose 상태를 저장·복원한다. */
+private fun NavHostController.selectTab(tab: AppTab) {
+    if (tab.matches(currentDestination)) return
+    navigate(tab.route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
 
-@Serializable
-private data object ShoppingListDestination
+private fun currentMonth(): YearMonth = Clock.System.todayIn(TimeZone.currentSystemDefault()).let { YearMonth(it.year, it.month) }
 
-@Serializable
-private data object ShoppingHistoryDestination
-
-@Serializable
-private data object CardListDestination
-
-@Serializable
-private data class CardEditorDestination(val cardId: String? = null)
-
-@Serializable
-private data object ExpenseEntryDestination
-
-@Serializable
-private data class MonthlyBudgetDestination(val year: Int, val month: Int)
-
-/** 앱의 이동 경로와 back stack을 소유하고 feature에는 이동 콜백만 전달한다. */
+/** Android·iOS 공통 앱 내비게이션과 탭 구성을 소유한다. */
 @Composable
 internal fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = ExpenseListDestination()) {
-        composable<ExpenseListDestination> { entry ->
-            val destination = entry.toRoute<ExpenseListDestination>()
-            ExpenseListRoute(
-                initialMonth = destination.year?.let { year -> destination.month?.let { YearMonth(year, it) } },
-                onOpenExpense = { id ->
-                    navController.navigate(ExpenseDetailDestination(id)) { launchSingleTop = true }
-                },
-                onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } },
-                onOpenShopping = { navController.navigate(ShoppingListDestination) { launchSingleTop = true } },
-                onAddExpense = {
-                    navController.navigate(ExpenseEntryDestination) { launchSingleTop = true }
-                },
-                onOpenFixedExpenses = { month ->
-                    navController.navigate(FixedExpenseListDestination(month.year, month.month.number)) { launchSingleTop = true }
-                },
-                onOpenBudget = { month ->
-                    navController.navigate(MonthlyBudgetDestination(month.year, month.month.number)) {
-                        launchSingleTop = true
-                    }
-                },
-            )
-        }
-        composable<ExpenseDetailDestination> { entry ->
-            val destination = entry.toRoute<ExpenseDetailDestination>()
-            ExpenseDetailRoute(
-                expenseId = destination.expenseId,
-                onBack = { navController.popBackStack() },
-                onEdit = { id -> navController.navigate(ExpenseEditDestination(id)) { launchSingleTop = true } },
-            )
-        }
-        composable<ExpenseEditDestination> { entry ->
-            val destination = entry.toRoute<ExpenseEditDestination>()
-            ExpenseEditRoute(expenseId = destination.expenseId, onBack = { navController.popBackStack() },
-                onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
-        }
-        composable<FixedExpenseListDestination> { entry ->
-            val destination = entry.toRoute<FixedExpenseListDestination>()
-            FixedExpenseListRoute(YearMonth(destination.year, destination.month),
-                onBack = { navController.popBackStack() },
-                onOpenEditor = { month, id ->
-                    navController.navigate(FixedExpenseEditorDestination(month.year, month.month.number, id)) { launchSingleTop = true }
-                })
-        }
-        composable<FixedExpenseEditorDestination> { entry ->
-            val destination = entry.toRoute<FixedExpenseEditorDestination>()
-            FixedExpenseEditorRoute(YearMonth(destination.year, destination.month),
-                onBack = { navController.popBackStack() }, planId = destination.planId)
-        }
-        composable<ShoppingListDestination> {
-            ShoppingListRoute(onBack = { navController.popBackStack() },
-                onOpenHistory = { navController.navigate(ShoppingHistoryDestination) { launchSingleTop = true } })
-        }
-        composable<ShoppingHistoryDestination> { entry ->
-            // 같은 장보기 진입의 임시 상태를 사용한다. 기록으로 이동해도 원본 목록을 초기화하지 않는다.
-            val listEntry = remember(entry) { navController.getBackStackEntry<ShoppingListDestination>() }
-            ShoppingHistoryRoute(onBack = { navController.popBackStack() }, viewModelStoreOwner = listEntry)
-        }
-        composable<CardListDestination> {
-            CardListRoute(onBack = { navController.popBackStack() }, onOpenEditor = { id ->
-                navController.navigate(CardEditorDestination(id)) { launchSingleTop = true }
-            })
-        }
-        composable<CardEditorDestination> { entry ->
-            val destination = entry.toRoute<CardEditorDestination>()
-            CardEditorRoute(cardId = destination.cardId, onBack = { navController.popBackStack() })
-        }
-        composable<ExpenseEntryDestination> {
-            ExpenseEntryRoute(onBack = { navController.popBackStack() },
-                onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
-        }
-        composable<MonthlyBudgetDestination> { entry ->
-            val destination = entry.toRoute<MonthlyBudgetDestination>()
-            MonthlyBudgetRoute(
-                initialMonth = YearMonth(destination.year, destination.month),
-                onBack = { navController.popBackStack() },
-                onViewExpenses = { month ->
-                    // 목록을 선택한 월의 전체 내역으로 교체해, 왕복할 때 이동 기록이 계속 쌓이지 않게 한다.
-                    navController.navigate(ExpenseListDestination(month.year, month.month.number)) {
-                        popUpTo<ExpenseListDestination> { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
-            )
+    val currentEntry by navController.currentBackStackEntryAsState()
+    val selectedTab = AppTab.entries.firstOrNull { it.matches(currentEntry?.destination) }
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = {
+            if (selectedTab != null) NavigationBar(containerColor = MaterialTheme.colorScheme.background) {
+                AppTab.entries.forEach { tab ->
+                    NavigationBarItem(selected = selectedTab == tab, onClick = { navController.selectTab(tab) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                        ),
+                        icon = { Icon(painterResource(tab.icon), contentDescription = null) },
+                        label = { Text(stringResource(tab.label)) })
+                }
+            }
+        },
+    ) { padding ->
+        NavHost(navController, startDestination = ExpenseListDestination,
+            modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)) {
+            composable<ExpenseListDestination> { entry ->
+                // 최상위 화면 상태는 탭 entry보다 오래 유지한다. 하위 입력 화면은 각 entry가 소유한다.
+                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                val requestedMonth by entry.savedStateHandle.getStateFlow<String?>(REQUESTED_EXPENSE_MONTH, null).collectAsStateWithLifecycle()
+                CompositionLocalProvider(LocalViewModelStoreOwner provides sessionEntry) {
+                    ExpenseListRoute(
+                        onOpenExpense = { navController.navigate(ExpenseDetailDestination(it)) { launchSingleTop = true } },
+                        onAddExpense = { navController.navigate(ExpenseEntryDestination) { launchSingleTop = true } },
+                        requestedMonth = requestedMonth?.let(YearMonth::parse),
+                        onMonthHandled = { entry.savedStateHandle[REQUESTED_EXPENSE_MONTH] = null },
+                    )
+                }
+            }
+            composable<MonthlyBudgetDestination> { entry ->
+                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                val initialMonth = remember(entry) { currentMonth() }
+                CompositionLocalProvider(LocalViewModelStoreOwner provides sessionEntry) {
+                    MonthlyBudgetRoute(initialMonth = initialMonth, showBackButton = false,
+                        onBack = { navController.selectTab(AppTab.Expenses) },
+                        onViewExpenses = { month ->
+                            navController.selectTab(AppTab.Expenses)
+                            // 요청은 처리 완료까지 보관한다. 일반 탭 이동은 월·필터를 변경하지 않는다.
+                            navController.getBackStackEntry<ExpenseListDestination>().savedStateHandle[REQUESTED_EXPENSE_MONTH] = month.toString()
+                        })
+                }
+            }
+            composable<ShoppingListDestination> { entry ->
+                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                CompositionLocalProvider(LocalViewModelStoreOwner provides sessionEntry) {
+                    ShoppingListRoute(showBackButton = false,
+                        onBack = { navController.selectTab(AppTab.Expenses) },
+                        onOpenHistory = { navController.navigate(ShoppingHistoryDestination) { launchSingleTop = true } })
+                }
+            }
+            composable<ManagementDestination> {
+                ManagementScreen(
+                    onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } },
+                    onOpenFixedExpenses = {
+                        val month = currentMonth()
+                        navController.navigate(FixedExpenseListDestination(month.year, month.month.number)) { launchSingleTop = true }
+                    })
+            }
+            composable<ShoppingHistoryDestination> { entry ->
+                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                ShoppingHistoryRoute(onBack = { navController.popBackStack() }, viewModelStoreOwner = sessionEntry)
+            }
+            composable<ExpenseDetailDestination> { entry ->
+                ExpenseDetailRoute(expenseId = entry.toRoute<ExpenseDetailDestination>().expenseId,
+                    onBack = { navController.popBackStack() },
+                    onEdit = { navController.navigate(ExpenseEditDestination(it)) { launchSingleTop = true } })
+            }
+            composable<ExpenseEditDestination> { entry ->
+                ExpenseEditRoute(expenseId = entry.toRoute<ExpenseEditDestination>().expenseId,
+                    onBack = { navController.popBackStack() },
+                    onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
+            }
+            composable<ExpenseEntryDestination> {
+                ExpenseEntryRoute(onBack = { navController.popBackStack() },
+                    onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
+            }
+            composable<CardListDestination> {
+                CardListRoute(onBack = { navController.popBackStack() },
+                    onOpenEditor = { navController.navigate(CardEditorDestination(it)) { launchSingleTop = true } })
+            }
+            composable<CardEditorDestination> { entry ->
+                CardEditorRoute(cardId = entry.toRoute<CardEditorDestination>().cardId, onBack = { navController.popBackStack() })
+            }
+            composable<FixedExpenseListDestination> { entry ->
+                val route = entry.toRoute<FixedExpenseListDestination>()
+                FixedExpenseListRoute(YearMonth(route.year, route.month), onBack = { navController.popBackStack() },
+                    onOpenEditor = { month, id -> navController.navigate(FixedExpenseEditorDestination(month.year, month.month.number, id)) { launchSingleTop = true } })
+            }
+            composable<FixedExpenseEditorDestination> { entry ->
+                val route = entry.toRoute<FixedExpenseEditorDestination>()
+                FixedExpenseEditorRoute(YearMonth(route.year, route.month), onBack = { navController.popBackStack() }, planId = route.planId)
+            }
         }
     }
 }

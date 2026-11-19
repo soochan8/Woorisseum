@@ -1,0 +1,10 @@
+<resources>
+    <string name="nav_expenses">지출</string>
+    <string name="nav_budget">예산</string>
+    <string name="nav_shopping">장보기</string>
+    <string name="nav_management">관리</string>
+    <string name="management_cards">카드 관리</string>
+    <string name="management_cards_description">지출에 사용하는 카드 등록·수정·삭제</string>
+    <string name="management_fixed">고정지출 관리</string>
+    <string name="management_fixed_description">월세·통신비·구독료 등 반복 지출 계획</string>
+</resources>
