@@ -2,6 +2,7 @@ package com.woorisseum.feature.transaction.model
 
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.YearMonth
 
 /** Screen이 전달하고 ViewModel이 처리하는 사용자 동작이다. */
 sealed interface ExpenseListUiIntent {
@@ -21,8 +22,6 @@ sealed interface ExpenseListUiIntent {
     data class OpenExpense(val expenseId: String) : ExpenseListUiIntent
 
     data object AddExpense : ExpenseListUiIntent
-    data object ViewFixedExpenses : ExpenseListUiIntent
-    data object ViewCards : ExpenseListUiIntent
-    data object ViewShopping : ExpenseListUiIntent
-    data object ViewBudget : ExpenseListUiIntent
+    /** 예산에서 요청한 월의 전체 내역을 연다. 일반 탭 전환은 이 Intent를 보내지 않는다. */
+    data class ShowMonth(val month: YearMonth) : ExpenseListUiIntent
 }

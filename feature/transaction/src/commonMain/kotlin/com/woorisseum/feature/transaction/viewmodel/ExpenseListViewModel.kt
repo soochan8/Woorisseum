@@ -81,19 +81,8 @@ class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardReposito
             ExpenseListUiIntent.AddExpense -> viewModelScope.launch {
                 _effects.emit(ExpenseListUiEffect.NavigateToAddExpense)
             }
-            ExpenseListUiIntent.ViewFixedExpenses -> {
-                val month = _uiState.value.month
-                viewModelScope.launch { _effects.emit(ExpenseListUiEffect.NavigateToFixedExpenses(month)) }
-            }
-            ExpenseListUiIntent.ViewCards -> viewModelScope.launch {
-                _effects.emit(ExpenseListUiEffect.NavigateToCards)
-            }
-            ExpenseListUiIntent.ViewShopping -> viewModelScope.launch {
-                _effects.emit(ExpenseListUiEffect.NavigateToShopping)
-            }
-            ExpenseListUiIntent.ViewBudget -> {
-                val month = _uiState.value.month
-                viewModelScope.launch { _effects.emit(ExpenseListUiEffect.NavigateToBudget(month)) }
+            is ExpenseListUiIntent.ShowMonth -> _uiState.update {
+                emptyMonthState(intent.month, it).copy(filters = ExpenseListFilters())
             }
         }
     }

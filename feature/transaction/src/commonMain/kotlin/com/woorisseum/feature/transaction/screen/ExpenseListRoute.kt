@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.woorisseum.feature.transaction.model.ExpenseListUiEffect
+import com.woorisseum.feature.transaction.model.ExpenseListUiIntent
 import com.woorisseum.feature.transaction.viewmodel.ExpenseListViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -19,34 +20,30 @@ import kotlinx.datetime.YearMonth
 @Composable
 fun ExpenseListRoute(
     onAddExpense: () -> Unit,
-    onOpenCards: () -> Unit,
-    onOpenShopping: () -> Unit,
     onOpenExpense: (String) -> Unit,
-    onOpenBudget: (YearMonth) -> Unit,
-    onOpenFixedExpenses: (YearMonth) -> Unit,
     initialMonth: YearMonth? = null,
+    requestedMonth: YearMonth? = null,
+    onMonthHandled: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ExpenseListViewModel = koinViewModel(parameters = { parametersOf(initialMonth) }),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnOpenExpense by rememberUpdatedState(onOpenExpense)
-    val currentOnOpenShopping by rememberUpdatedState(onOpenShopping)
-    val currentOnOpenCards by rememberUpdatedState(onOpenCards)
     val currentOnAddExpense by rememberUpdatedState(onAddExpense)
-    val currentOnOpenFixedExpenses by rememberUpdatedState(onOpenFixedExpenses)
-    val currentOnOpenBudget by rememberUpdatedState(onOpenBudget)
 
+    LaunchedEffect(viewModel, requestedMonth) {
+        requestedMonth?.let {
+            viewModel.onIntent(ExpenseListUiIntent.ShowMonth(it))
+            onMonthHandled()
+        }
+    }
     LaunchedEffect(viewModel, lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             viewModel.effects.collect { effect ->
                 when (effect) {
                     is ExpenseListUiEffect.NavigateToDetail -> currentOnOpenExpense(effect.expenseId)
-                    ExpenseListUiEffect.NavigateToCards -> currentOnOpenCards()
-                    ExpenseListUiEffect.NavigateToShopping -> currentOnOpenShopping()
                     ExpenseListUiEffect.NavigateToAddExpense -> currentOnAddExpense()
-                    is ExpenseListUiEffect.NavigateToFixedExpenses -> currentOnOpenFixedExpenses(effect.month)
-                    is ExpenseListUiEffect.NavigateToBudget -> currentOnOpenBudget(effect.month)
                 }
             }
         }
