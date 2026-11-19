@@ -10,5 +10,6 @@ sealed interface PaymentMethod {
     data class Card(
         val cardId: String,
         val name: String,
+        val issuer: String = "",
     ) : PaymentMethod
 }
