@@ -93,4 +93,21 @@
     <string name="fixed_expense_editor_notice">계획 등록은 실제 지출 기록과 별개예요. 아직 저장 기능이 연결되지 않아 입력한 내용은 저장되지 않아요.</string>
     <string name="fixed_expense_storage_unavailable">입력은 확인했어요. 저장 기능 연결 전이라 변경 내용은 저장되지 않았어요.</string>
     <string name="expense_open_shopping">장보기</string>
+    <string name="card_management_title">카드 관리</string>
+    <string name="card_register_title">카드 등록</string>
+    <string name="card_edit_title">카드 수정</string>
+    <string name="card_edit_action">수정</string>
+    <string name="card_empty_title">등록한 카드가 없어요</string>
+    <string name="card_empty_description">지출에 사용할 카드를 등록해 보세요.</string>
+    <string name="card_alias_label">카드 별칭</string>
+    <string name="card_alias_example">예: 생활비 카드</string>
+    <string name="card_issuer_label">카드사</string>
+    <string name="card_issuer_example">예: 현대카드</string>
+    <string name="card_field_required">필수 입력 항목입니다.</string>
+    <string name="card_not_found">카드를 찾을 수 없어요. 목록으로 돌아가 다시 선택해 주세요.</string>
+    <string name="card_save_failed">카드를 저장하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="card_payment_label">%1$s · %2$s</string>
+    <string name="card_delete">삭제</string>
+    <string name="card_delete_item">%1$s · %2$s 삭제</string>
+    <string name="card_delete_failed">카드를 삭제하지 못했어요. 다시 시도해 주세요.</string>
 </resources>
