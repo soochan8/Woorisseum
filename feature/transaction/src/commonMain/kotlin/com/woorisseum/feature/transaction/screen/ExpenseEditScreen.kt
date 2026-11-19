@@ -20,6 +20,7 @@ fun ExpenseEditScreen(
     state: ExpenseEditUiState,
     onIntent: (ExpenseEditUiIntent) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenCards: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -60,7 +61,7 @@ fun ExpenseEditScreen(
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                ExpenseForm(form, { onIntent(ExpenseEditUiIntent.FormChanged(it)) })
+                ExpenseForm(form, { onIntent(ExpenseEditUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards)
                 Text(stringResource(if (state.showStorageUnavailable)
                     Res.string.expense_edit_storage_unavailable else Res.string.expense_edit_notice),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)

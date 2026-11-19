@@ -130,13 +130,6 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
     }
 }
 
-@Composable
-private fun paymentLabel(payment: PaymentMethod): String = when (payment) {
-    PaymentMethod.Cash -> stringResource(Res.string.expense_payment_cash)
-    PaymentMethod.BankTransfer -> stringResource(Res.string.expense_payment_transfer)
-    is PaymentMethod.Card -> payment.name
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExpenseDateRangeDialog(

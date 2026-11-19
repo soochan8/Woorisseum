@@ -139,6 +139,9 @@ private fun ExpenseHeader(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
             )
+            TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewCards) }) {
+                Text(stringResource(Res.string.card_management_title))
+            }
             TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewShopping) }) {
                 Text(stringResource(Res.string.expense_open_shopping))
             }

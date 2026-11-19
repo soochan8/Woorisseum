@@ -15,6 +15,8 @@ import com.woorisseum.feature.transaction.fixed.FixedExpenseListRoute
 import com.woorisseum.feature.transaction.fixed.FixedExpenseEditorRoute
 import com.woorisseum.feature.transaction.screen.ExpenseEntryRoute
 import com.woorisseum.feature.transaction.screen.ExpenseListRoute
+import com.woorisseum.feature.transaction.card.CardListRoute
+import com.woorisseum.feature.transaction.card.CardEditorRoute
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
@@ -41,6 +43,12 @@ private data object ShoppingListDestination
 private data object ShoppingHistoryDestination
 
 @Serializable
+private data object CardListDestination
+
+@Serializable
+private data class CardEditorDestination(val cardId: String? = null)
+
+@Serializable
 private data object ExpenseEntryDestination
 
 @Serializable
@@ -58,6 +66,7 @@ internal fun AppNavigation() {
                 onOpenExpense = { id ->
                     navController.navigate(ExpenseDetailDestination(id)) { launchSingleTop = true }
                 },
+                onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } },
                 onOpenShopping = { navController.navigate(ShoppingListDestination) { launchSingleTop = true } },
                 onAddExpense = {
                     navController.navigate(ExpenseEntryDestination) { launchSingleTop = true }
@@ -82,7 +91,8 @@ internal fun AppNavigation() {
         }
         composable<ExpenseEditDestination> { entry ->
             val destination = entry.toRoute<ExpenseEditDestination>()
-            ExpenseEditRoute(expenseId = destination.expenseId, onBack = { navController.popBackStack() })
+            ExpenseEditRoute(expenseId = destination.expenseId, onBack = { navController.popBackStack() },
+                onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
         }
         composable<FixedExpenseListDestination> { entry ->
             val destination = entry.toRoute<FixedExpenseListDestination>()
@@ -106,8 +116,18 @@ internal fun AppNavigation() {
             val listEntry = remember(entry) { navController.getBackStackEntry<ShoppingListDestination>() }
             ShoppingHistoryRoute(onBack = { navController.popBackStack() }, viewModelStoreOwner = listEntry)
         }
+        composable<CardListDestination> {
+            CardListRoute(onBack = { navController.popBackStack() }, onOpenEditor = { id ->
+                navController.navigate(CardEditorDestination(id)) { launchSingleTop = true }
+            })
+        }
+        composable<CardEditorDestination> { entry ->
+            val destination = entry.toRoute<CardEditorDestination>()
+            CardEditorRoute(cardId = destination.cardId, onBack = { navController.popBackStack() })
+        }
         composable<ExpenseEntryDestination> {
-            ExpenseEntryRoute(onBack = { navController.popBackStack() })
+            ExpenseEntryRoute(onBack = { navController.popBackStack() },
+                onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
         }
         composable<MonthlyBudgetDestination> { entry ->
             val destination = entry.toRoute<MonthlyBudgetDestination>()

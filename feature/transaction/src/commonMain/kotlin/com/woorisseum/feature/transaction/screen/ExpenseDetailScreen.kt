@@ -11,7 +11,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
-import com.woorisseum.core.domain.transaction.model.PaymentMethod
 import com.woorisseum.feature.transaction.model.*
 import com.woorisseum.feature.transaction.resources.*
 import kotlinx.datetime.number
@@ -70,11 +69,7 @@ fun ExpenseDetailScreen(
                     ExpenseCategory.VARIABLE -> Res.string.expense_category_variable
                     ExpenseCategory.IMPULSE -> Res.string.expense_category_impulse
                 }))
-                DetailRow(stringResource(Res.string.expense_payment_label), when (val payment = detail.paymentMethod) {
-                    PaymentMethod.Cash -> stringResource(Res.string.expense_payment_cash)
-                    PaymentMethod.BankTransfer -> stringResource(Res.string.expense_payment_transfer)
-                    is PaymentMethod.Card -> payment.name
-                })
+                DetailRow(stringResource(Res.string.expense_payment_label), paymentLabel(detail.paymentMethod))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(Res.string.expense_memo_title),
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)

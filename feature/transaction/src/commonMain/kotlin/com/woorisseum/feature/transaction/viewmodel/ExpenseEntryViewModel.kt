@@ -1,16 +1,27 @@
 package com.woorisseum.feature.transaction.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.woorisseum.core.domain.transaction.card.CardRepository
 import com.woorisseum.feature.transaction.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
 /** 입력 전이를 소유한다. 저장소 연결 전에는 성공·화면 이동을 발생시키지 않는다. */
-class ExpenseEntryViewModel(initialDate: LocalDate) : ViewModel() {
+class ExpenseEntryViewModel(initialDate: LocalDate, cardRepository: CardRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ExpenseEntryUiState(ExpenseFormUiState(date = initialDate)))
     val uiState = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            cardRepository.observeCards().collect { cards ->
+                _uiState.update { it.copy(form = it.form.withCards(cards)) }
+            }
+        }
+    }
 
     fun onIntent(intent: ExpenseEntryUiIntent) {
         _uiState.update { state ->

@@ -40,6 +40,7 @@ fun ExpenseEntryScreen(
     onIntent: (ExpenseEntryUiIntent) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenCards: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -75,7 +76,7 @@ fun ExpenseEntryScreen(
                 .verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            ExpenseForm(state.form, { onIntent(ExpenseEntryUiIntent.FormChanged(it)) })
+            ExpenseForm(state.form, { onIntent(ExpenseEntryUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards)
             if (state.showStorageUnavailable) {
                 Text(
                     stringResource(Res.string.expense_storage_unavailable),

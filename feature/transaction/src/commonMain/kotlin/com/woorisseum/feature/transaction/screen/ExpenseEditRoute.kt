@@ -16,6 +16,7 @@ import org.koin.core.parameter.parametersOf
 fun ExpenseEditRoute(
     expenseId: String,
     onBack: () -> Unit,
+    onOpenCards: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ExpenseEditViewModel = koinViewModel(parameters = { parametersOf(expenseId) }),
 ) {
@@ -31,5 +32,5 @@ fun ExpenseEditRoute(
             }
         }
     }
-    ExpenseEditScreen(state, viewModel::onIntent, modifier)
+    ExpenseEditScreen(state, viewModel::onIntent, modifier, onOpenCards = onOpenCards)
 }

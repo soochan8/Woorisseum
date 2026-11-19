@@ -39,6 +39,7 @@ internal fun ExpenseForm(
     state: ExpenseFormUiState,
     onIntent: (ExpenseFormUiIntent) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenCards: () -> Unit = {},
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -82,14 +83,11 @@ internal fun ExpenseForm(
                     FilterChip(
                         selected = state.paymentMethod == method,
                         onClick = { onIntent(ExpenseFormUiIntent.PaymentMethodSelected(method)) },
-                        label = { Text(when (method) {
-                            PaymentMethod.Cash -> stringResource(Res.string.expense_payment_cash)
-                            PaymentMethod.BankTransfer -> stringResource(Res.string.expense_payment_transfer)
-                            is PaymentMethod.Card -> method.name
-                        }) },
+                        label = { Text(paymentLabel(method)) },
                     )
                 }
             }
+            TextButton(onClick = onOpenCards) { Text(stringResource(Res.string.card_management_title)) }
             if (state.paymentMethodRequired) {
                 Text(
                     stringResource(Res.string.expense_payment_required),

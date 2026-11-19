@@ -2,12 +2,14 @@ package com.woorisseum.feature.transaction.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.woorisseum.core.domain.transaction.card.CardRepository
+import com.woorisseum.feature.transaction.model.ExpenseDateRange
+import com.woorisseum.feature.transaction.model.ExpenseListFilters
 import com.woorisseum.feature.transaction.model.ExpenseListUiEffect
 import com.woorisseum.feature.transaction.model.ExpenseListUiIntent
 import com.woorisseum.feature.transaction.model.ExpenseListUiState
-import com.woorisseum.feature.transaction.model.ExpenseListFilters
-import com.woorisseum.feature.transaction.model.ExpenseDateRange
 import com.woorisseum.feature.transaction.model.toExpensePaymentFilter
+import com.woorisseum.feature.transaction.model.toPaymentMethods
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,13 +22,27 @@ import kotlinx.datetime.number
 import kotlinx.datetime.plusMonth
 
 /** 월·분류 선택과 이동 요청을 처리한다. 데이터 조회는 Repository 연결 단계에서 추가한다. */
-class ExpenseListViewModel(initialMonth: YearMonth) : ViewModel() {
+class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(emptyMonthState(initialMonth))
     val uiState = _uiState.asStateFlow()
 
     // 화면이 비활성 상태일 때 발생한 이동 요청은 재생하지 않는다.
     private val _effects = MutableSharedFlow<ExpenseListUiEffect>()
     val effects = _effects.asSharedFlow()
+
+    init {
+        viewModelScope.launch {
+            cardRepository.observeCards().collect { cards ->
+                _uiState.update { state ->
+                    val methods = cards.toPaymentMethods()
+                    val selected = state.filters.paymentMethod?.takeIf { filter ->
+                        methods.any { it.toExpensePaymentFilter() == filter }
+                    }
+                    state.copy(availablePaymentMethods = methods, filters = state.filters.copy(paymentMethod = selected))
+                }
+            }
+        }
+    }
 
     fun onIntent(intent: ExpenseListUiIntent) {
         when (intent) {
@@ -68,6 +84,9 @@ class ExpenseListViewModel(initialMonth: YearMonth) : ViewModel() {
             ExpenseListUiIntent.ViewFixedExpenses -> {
                 val month = _uiState.value.month
                 viewModelScope.launch { _effects.emit(ExpenseListUiEffect.NavigateToFixedExpenses(month)) }
+            }
+            ExpenseListUiIntent.ViewCards -> viewModelScope.launch {
+                _effects.emit(ExpenseListUiEffect.NavigateToCards)
             }
             ExpenseListUiIntent.ViewShopping -> viewModelScope.launch {
                 _effects.emit(ExpenseListUiEffect.NavigateToShopping)

@@ -11,6 +11,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ExpenseEntryRoute(
     onBack: () -> Unit,
+    onOpenCards: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ExpenseEntryViewModel = koinViewModel(),
 ) {
@@ -19,6 +20,7 @@ fun ExpenseEntryRoute(
         state = state,
         onIntent = viewModel::onIntent,
         onBack = onBack,
+        onOpenCards = onOpenCards,
         modifier = modifier,
     )
 }
