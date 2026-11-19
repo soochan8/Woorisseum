@@ -42,19 +42,7 @@ internal fun ExpenseForm(
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        OutlinedTextField(
-            value = state.amountInput,
-            onValueChange = { onIntent(ExpenseFormUiIntent.AmountChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(Res.string.expense_amount_label)) },
-            suffix = { Text(stringResource(Res.string.expense_currency_won)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-            isError = state.amountError != null,
-            supportingText = state.amountError?.let { error ->
-                { Text(amountErrorText(error)) }
-            },
-        )
+        ExpenseAmountInput(state.amountInput, state.amountError, { onIntent(ExpenseFormUiIntent.AmountChanged(it)) })
         Column {
             Text(stringResource(Res.string.expense_date_label), style = MaterialTheme.typography.labelLarge)
             TextButton(onClick = { showDatePicker = true }) {
@@ -110,14 +98,7 @@ internal fun ExpenseForm(
                 )
             }
         }
-        OutlinedTextField(
-            value = state.memoInput,
-            onValueChange = { onIntent(ExpenseFormUiIntent.MemoChanged(it)) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(Res.string.expense_memo_label)) },
-            minLines = 2,
-            maxLines = 5,
-        )
+        ExpenseMemoInput(state.memoInput, { onIntent(ExpenseFormUiIntent.MemoChanged(it)) })
     }
     if (showDatePicker) {
         ExpenseDateDialog(
@@ -130,14 +111,6 @@ internal fun ExpenseForm(
         )
     }
 }
-
-@Composable
-private fun amountErrorText(error: ExpenseAmountInputError): String = stringResource(when (error) {
-    ExpenseAmountInputError.REQUIRED -> Res.string.expense_amount_required
-    ExpenseAmountInputError.INVALID_INTEGER -> Res.string.expense_amount_integer
-    ExpenseAmountInputError.OUT_OF_RANGE -> Res.string.expense_amount_range
-    ExpenseAmountInputError.NOT_POSITIVE -> Res.string.expense_amount_positive
-})
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

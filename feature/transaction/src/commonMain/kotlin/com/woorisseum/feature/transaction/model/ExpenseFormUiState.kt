@@ -49,7 +49,7 @@ internal fun ExpenseFormUiState.validated() = copy(
     paymentMethodRequired = paymentMethod == null,
 )
 
-private fun validateExpenseAmount(input: String): ExpenseAmountInputError? {
+internal fun validateExpenseAmount(input: String): ExpenseAmountInputError? {
     if (input.isBlank()) return ExpenseAmountInputError.REQUIRED
     // 부호·소수·문자를 제거해 사용자가 입력한 금액을 바꾸지 않는다.
     if (input.any { it !in '0'..'9' }) return ExpenseAmountInputError.INVALID_INTEGER
