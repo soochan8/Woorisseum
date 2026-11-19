@@ -4,6 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.woorisseum.core.designsystem.theme.WoorisseumTheme
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
+import com.woorisseum.feature.transaction.viewmodel.withExpenseResults
+import com.woorisseum.feature.transaction.model.ExpenseSearchPeriod
+import com.woorisseum.feature.transaction.model.ExpenseSearchPreset
+import com.woorisseum.feature.transaction.model.ExpenseDateRange
 import com.woorisseum.feature.transaction.model.ExpenseDayUiModel
 import com.woorisseum.feature.transaction.model.ExpenseItemUiModel
 import com.woorisseum.feature.transaction.model.ExpenseListUiState
@@ -97,3 +101,63 @@ private fun previewExpenseListState() = ExpenseListUiState(
         ),
     ),
 )
+
+private fun previewExpenseSearchState(query: String = "커피", period: ExpenseSearchPeriod = ExpenseSearchPeriod()): ExpenseListUiState {
+    val expenses = listOf(
+        com.woorisseum.core.domain.transaction.model.Expense("search-1", 4500, LocalDate(2026,11,13), "이디야커피",
+            ExpenseCategory.VARIABLE, com.woorisseum.core.domain.transaction.model.PaymentMethod.Cash, "출근길 커피"),
+        com.woorisseum.core.domain.transaction.model.Expense("search-2", 13800, LocalDate(2026,11,12), "동네 빵집",
+            ExpenseCategory.VARIABLE, com.woorisseum.core.domain.transaction.model.PaymentMethod.BankTransfer, "커피와 함께 먹을 빵"),
+        com.woorisseum.core.domain.transaction.model.Expense("search-previous-month", 5200, LocalDate(2026,10,9), "동네 카페",
+            ExpenseCategory.VARIABLE, com.woorisseum.core.domain.transaction.model.PaymentMethod.Cash, "지난달 커피"),
+        com.woorisseum.core.domain.transaction.model.Expense("search-3", 2200, LocalDate(2026,11,12), "편의점",
+            ExpenseCategory.IMPULSE, com.woorisseum.core.domain.transaction.model.PaymentMethod.Cash, "생수"),
+    )
+    return ExpenseListUiState(month = YearMonth(2026,11), isSearchOpen = true, searchQuery = query, searchPeriod = period)
+        .withExpenseResults(expenses)
+}
+
+@Preview(name = "지출 검색 · 결과", widthDp = 390, heightDp = 844, locale = "ko")
+@Composable
+private fun ExpenseSearchResultsPreview() = WoorisseumTheme {
+    ExpenseListScreen(previewExpenseSearchState(), {})
+}
+
+@Preview(name = "지출 검색 · 결과 없음", widthDp = 390, heightDp = 844, locale = "ko")
+@Composable
+private fun ExpenseSearchEmptyPreview() = WoorisseumTheme {
+    ExpenseListScreen(previewExpenseSearchState("보험"), {})
+}
+
+@Preview(name = "지출 검색 · 조회 미연결", widthDp = 390, heightDp = 844, locale = "ko")
+@Composable
+private fun ExpenseSearchUnavailablePreview() = WoorisseumTheme {
+    ExpenseListScreen(ExpenseListUiState(YearMonth(2026,11), isSearchOpen = true, searchQuery = "커피"), {})
+}
+
+@Preview(name = "지출 검색 · 좁은 화면", widthDp = 320, heightDp = 640, locale = "ko")
+@Composable
+private fun ExpenseSearchNarrowPreview() = WoorisseumTheme {
+    ExpenseListScreen(previewExpenseSearchState(), {})
+}
+
+@Preview(name = "지출 검색 · 다크", widthDp = 390, heightDp = 844, locale = "ko")
+@Composable
+private fun ExpenseSearchDarkPreview() = WoorisseumTheme(darkTheme = true) {
+    ExpenseListScreen(previewExpenseSearchState(), {})
+}
+
+
+@Preview(name = "지출 검색 · 여러 달 직접 선택", widthDp = 390, heightDp = 844, locale = "ko")
+@Composable
+private fun ExpenseSearchCustomPeriodPreview() = WoorisseumTheme {
+    ExpenseListScreen(previewExpenseSearchState(period = ExpenseSearchPeriod(ExpenseSearchPreset.CUSTOM,
+        ExpenseDateRange(LocalDate(2026,10,1), LocalDate(2026,11,30)))), {})
+}
+
+
+@Preview(name = "지출 검색 · 기간 선택", widthDp = 390, heightDp = 844, locale = "ko")
+@Composable
+private fun ExpenseSearchPeriodMenuPreview() = WoorisseumTheme {
+    ExpenseSearchPeriodSheet(ExpenseSearchPeriod(), onSelect = {}, onDismiss = {})
+}

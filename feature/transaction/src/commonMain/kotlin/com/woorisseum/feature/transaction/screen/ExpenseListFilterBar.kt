@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
@@ -15,6 +16,9 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +43,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.woorisseum.core.domain.transaction.model.PaymentMethod
 import com.woorisseum.feature.transaction.model.ExpenseDateRange
+import com.woorisseum.feature.transaction.model.ExpenseSearchPreset
 import com.woorisseum.feature.transaction.model.ExpenseListUiIntent
 import com.woorisseum.feature.transaction.model.ExpenseListUiState
 import com.woorisseum.feature.transaction.model.toExpensePaymentFilter
@@ -51,17 +56,25 @@ import org.jetbrains.compose.resources.stringResource
 /** 필터 입력 UI다. 조건의 변경·검증은 ViewModel에 맡긴다. */
 @Composable
 internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseListUiIntent) -> Unit) {
-    var showDates by rememberSaveable(state.month.toString()) { mutableStateOf(false) }
+    var showDates by rememberSaveable(state.month.toString(), state.isSearchOpen) { mutableStateOf(false) }
+    var showSearchPeriods by rememberSaveable(state.isSearchOpen) { mutableStateOf(false) }
+    var showCustomSearchPeriod by rememberSaveable(state.isSearchOpen) { mutableStateOf(false) }
     var showPayments by rememberSaveable { mutableStateOf(false) }
     FlowRow(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         FilterChip(
-            selected = state.filters.dateRange != null,
-            onClick = { showDates = true },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                selectedLabelColor = MaterialTheme.colorScheme.primary),
+            selected = if (state.isSearchOpen) state.searchPeriod.preset != ExpenseSearchPreset.ALL else state.filters.dateRange != null,
+            onClick = { if (state.isSearchOpen) showSearchPeriods = true else showDates = true },
             label = {
-                Text(state.filters.dateRange?.let {
+                if (state.isSearchOpen) Text(
+                    if (state.searchPeriod.preset == ExpenseSearchPreset.CUSTOM) searchPeriodRangeLabel(state.searchPeriod)
+                    else searchPresetLabel(state.searchPeriod.preset), modifier = Modifier.widthIn(max = 250.dp),
+                ) else Text(state.filters.dateRange?.let {
                     stringResource(Res.string.expense_filter_date_range, it.start.month.number, it.start.day,
                         it.endInclusive.month.number, it.endInclusive.day)
                 } ?: stringResource(Res.string.expense_filter_date_all))
@@ -80,11 +93,29 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
                 )
             },
         )
-        if (state.filters.isActive) {
+        val hasFilters = state.filters.category != null || state.filters.paymentMethod != null ||
+            if (state.isSearchOpen) state.searchPeriod.preset != ExpenseSearchPreset.ALL else state.filters.dateRange != null
+        if (hasFilters) {
             TextButton(onClick = { onIntent(ExpenseListUiIntent.ResetFilters) }) {
                 Text(stringResource(Res.string.expense_filter_reset))
             }
         }
+    }
+    if (showSearchPeriods) {
+        ExpenseSearchPeriodSheet(state.searchPeriod, onSelect = { preset ->
+            showSearchPeriods = false
+            if (preset == ExpenseSearchPreset.CUSTOM) showCustomSearchPeriod = true
+            else onIntent(ExpenseListUiIntent.SelectSearchPreset(preset))
+        }, onDismiss = { showSearchPeriods = false })
+    }
+    if (showCustomSearchPeriod) {
+        ExpenseDateRangeDialog(month = state.month, selectedRange = state.searchPeriod.range,
+            restrictToMonth = false,
+            onDismiss = { showCustomSearchPeriod = false; showSearchPeriods = true },
+            onSelect = { start, end ->
+                onIntent(ExpenseListUiIntent.SelectSearchRange(start, end))
+                showCustomSearchPeriod = false
+            })
     }
     if (showDates) {
         ExpenseDateRangeDialog(
@@ -137,40 +168,44 @@ private fun ExpenseDateRangeDialog(
     selectedRange: ExpenseDateRange?,
     onDismiss: () -> Unit,
     onSelect: (LocalDate, LocalDate) -> Unit,
+    restrictToMonth: Boolean = true,
 ) {
-    val selectableDates = remember(month) {
+    val selectableDates = remember(month, restrictToMonth) {
         object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 val date = LocalDate.fromEpochDays(utcTimeMillis / 86_400_000L)
-                return date >= month.firstDay && date <= month.lastDay
+                return !restrictToMonth || date >= month.firstDay && date <= month.lastDay
             }
         }
     }
     val picker = rememberDateRangePickerState(
         initialSelectedStartDateMillis = selectedRange?.start?.toEpochDays()?.times(86_400_000L),
         initialSelectedEndDateMillis = selectedRange?.endInclusive?.toEpochDays()?.times(86_400_000L),
-        initialDisplayedMonthMillis = month.firstDay.toEpochDays() * 86_400_000L,
-        yearRange = month.year..month.year,
+        initialDisplayedMonthMillis = (selectedRange?.start ?: month.firstDay).toEpochDays() * 86_400_000L,
+        yearRange = if (restrictToMonth) month.year..month.year else
+            minOf(1900, month.year, selectedRange?.start?.year ?: month.year)..maxOf(2100, month.year, selectedRange?.endInclusive?.year ?: month.year),
         selectableDates = selectableDates,
     )
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
-            modifier = Modifier.safeDrawingPadding().padding(16.dp).widthIn(max = 560.dp)
-                .fillMaxWidth().heightIn(max = 600.dp),
+            modifier = Modifier.safeDrawingPadding().imePadding().padding(16.dp).widthIn(max = 560.dp)
+                .fillMaxWidth().heightIn(max = if (picker.displayMode == DisplayMode.Input) 360.dp else 600.dp),
             shape = MaterialTheme.shapes.extraLarge,
             color = MaterialTheme.colorScheme.surface,
         ) {
             Column {
                 Text(
-                    stringResource(Res.string.expense_filter_date_title, month.year, month.month.number),
+                    if (restrictToMonth) stringResource(Res.string.expense_filter_date_title, month.year, month.month.number)
+                    else stringResource(Res.string.expense_search_period_custom_title),
                     modifier = Modifier.padding(20.dp), style = MaterialTheme.typography.titleMedium,
                 )
                 DateRangePicker(
                     state = picker, modifier = Modifier.weight(1f), title = null, headline = null,
-                    showModeToggle = false,
+                    showModeToggle = !restrictToMonth,
+                    colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 )
                 Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = { onSelect(month.firstDay, month.lastDay) }) {
+                    if (restrictToMonth) TextButton(onClick = { onSelect(month.firstDay, month.lastDay) }) {
                         Text(stringResource(Res.string.expense_filter_date_all))
                     }
                     TextButton(onClick = onDismiss) { Text(stringResource(Res.string.expense_cancel)) }
