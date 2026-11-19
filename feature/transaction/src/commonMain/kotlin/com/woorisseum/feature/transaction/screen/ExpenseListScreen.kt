@@ -137,6 +137,9 @@ private fun ExpenseHeader(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
             )
+            TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewFixedExpenses) }) {
+                Text(stringResource(Res.string.fixed_expense_title))
+            }
             TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewBudget) }) {
                 Text(stringResource(Res.string.expense_view_budget))
             }

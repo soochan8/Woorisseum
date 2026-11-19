@@ -21,6 +21,7 @@ fun ExpenseListRoute(
     onAddExpense: () -> Unit,
     onOpenExpense: (String) -> Unit,
     onOpenBudget: (YearMonth) -> Unit,
+    onOpenFixedExpenses: (YearMonth) -> Unit,
     initialMonth: YearMonth? = null,
     modifier: Modifier = Modifier,
     viewModel: ExpenseListViewModel = koinViewModel(parameters = { parametersOf(initialMonth) }),
@@ -29,6 +30,7 @@ fun ExpenseListRoute(
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentOnOpenExpense by rememberUpdatedState(onOpenExpense)
     val currentOnAddExpense by rememberUpdatedState(onAddExpense)
+    val currentOnOpenFixedExpenses by rememberUpdatedState(onOpenFixedExpenses)
     val currentOnOpenBudget by rememberUpdatedState(onOpenBudget)
 
     LaunchedEffect(viewModel, lifecycleOwner) {
@@ -37,6 +39,7 @@ fun ExpenseListRoute(
                 when (effect) {
                     is ExpenseListUiEffect.NavigateToDetail -> currentOnOpenExpense(effect.expenseId)
                     ExpenseListUiEffect.NavigateToAddExpense -> currentOnAddExpense()
+                    is ExpenseListUiEffect.NavigateToFixedExpenses -> currentOnOpenFixedExpenses(effect.month)
                     is ExpenseListUiEffect.NavigateToBudget -> currentOnOpenBudget(effect.month)
                 }
             }

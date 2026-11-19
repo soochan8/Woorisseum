@@ -8,6 +8,8 @@ import androidx.navigation.toRoute
 import com.woorisseum.feature.budget.screen.MonthlyBudgetRoute
 import com.woorisseum.feature.transaction.screen.ExpenseDetailRoute
 import com.woorisseum.feature.transaction.screen.ExpenseEditRoute
+import com.woorisseum.feature.transaction.fixed.FixedExpenseListRoute
+import com.woorisseum.feature.transaction.fixed.FixedExpenseEditorRoute
 import com.woorisseum.feature.transaction.screen.ExpenseEntryRoute
 import com.woorisseum.feature.transaction.screen.ExpenseListRoute
 import kotlinx.serialization.Serializable
@@ -22,6 +24,12 @@ private data class ExpenseDetailDestination(val expenseId: String)
 
 @Serializable
 private data class ExpenseEditDestination(val expenseId: String)
+
+@Serializable
+private data class FixedExpenseListDestination(val year: Int, val month: Int)
+
+@Serializable
+private data class FixedExpenseEditorDestination(val year: Int, val month: Int, val planId: String? = null)
 
 @Serializable
 private data object ExpenseEntryDestination
@@ -44,6 +52,9 @@ internal fun AppNavigation() {
                 onAddExpense = {
                     navController.navigate(ExpenseEntryDestination) { launchSingleTop = true }
                 },
+                onOpenFixedExpenses = { month ->
+                    navController.navigate(FixedExpenseListDestination(month.year, month.month.number)) { launchSingleTop = true }
+                },
                 onOpenBudget = { month ->
                     navController.navigate(MonthlyBudgetDestination(month.year, month.month.number)) {
                         launchSingleTop = true
@@ -62,6 +73,19 @@ internal fun AppNavigation() {
         composable<ExpenseEditDestination> { entry ->
             val destination = entry.toRoute<ExpenseEditDestination>()
             ExpenseEditRoute(expenseId = destination.expenseId, onBack = { navController.popBackStack() })
+        }
+        composable<FixedExpenseListDestination> { entry ->
+            val destination = entry.toRoute<FixedExpenseListDestination>()
+            FixedExpenseListRoute(YearMonth(destination.year, destination.month),
+                onBack = { navController.popBackStack() },
+                onOpenEditor = { month, id ->
+                    navController.navigate(FixedExpenseEditorDestination(month.year, month.month.number, id)) { launchSingleTop = true }
+                })
+        }
+        composable<FixedExpenseEditorDestination> { entry ->
+            val destination = entry.toRoute<FixedExpenseEditorDestination>()
+            FixedExpenseEditorRoute(YearMonth(destination.year, destination.month),
+                onBack = { navController.popBackStack() }, planId = destination.planId)
         }
         composable<ExpenseEntryDestination> {
             ExpenseEntryRoute(onBack = { navController.popBackStack() })

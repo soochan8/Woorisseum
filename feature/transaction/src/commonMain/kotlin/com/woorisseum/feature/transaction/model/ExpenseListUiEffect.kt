@@ -6,5 +6,6 @@ import kotlinx.datetime.YearMonth
 sealed interface ExpenseListUiEffect {
     data class NavigateToDetail(val expenseId: String) : ExpenseListUiEffect
     data object NavigateToAddExpense : ExpenseListUiEffect
+    data class NavigateToFixedExpenses(val month: YearMonth) : ExpenseListUiEffect
     data class NavigateToBudget(val month: YearMonth) : ExpenseListUiEffect
 }

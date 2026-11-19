@@ -2,11 +2,13 @@ package com.woorisseum.di
 
 import com.woorisseum.feature.transaction.di.transactionModule
 import com.woorisseum.feature.budget.di.budgetModule
+import com.woorisseum.core.domain.transaction.fixed.CalculateMonthlyFixedExpensesUseCase
 import com.woorisseum.core.domain.budget.usecase.CalculateBudgetSummaryUseCase
 import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
 
 private val domainModule = module {
+    factory { CalculateMonthlyFixedExpensesUseCase() }
     factory { CalculateBudgetSummaryUseCase() }
 }
 
