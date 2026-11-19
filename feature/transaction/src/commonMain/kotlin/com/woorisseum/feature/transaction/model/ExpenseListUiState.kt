@@ -8,7 +8,13 @@ import kotlinx.datetime.YearMonth
 /** 목록 화면이 그릴 값이다. 합계·필터·날짜별 그룹은 화면 바깥에서 준비한다. */
 data class ExpenseListUiState(
     val month: YearMonth,
+    val isSearchOpen: Boolean = false,
+    val searchQuery: String = "",
+    val searchPeriod: ExpenseSearchPeriod = ExpenseSearchPeriod(),
+    // null 저장소를 빈 조회 성공으로 취급하지 않는다. 연결 전 검색은 준비 상태로 표시한다.
+    val isExpenseSourceReady: Boolean = false,
     val totalAmountText: String = "0",
+    val totalAmountOverflow: Boolean = false,
     val expenseCount: Int = 0,
     val periodText: String = "",
     val filters: ExpenseListFilters = ExpenseListFilters(),
@@ -24,6 +30,7 @@ data class ExpenseDayUiModel(
     val dateLabel: String,
     val totalAmountText: String,
     val expenses: List<ExpenseItemUiModel>,
+    val totalAmountOverflow: Boolean = false,
 )
 
 /** 금액·결제수단 이름 등 화면에 맞게 변환한 지출 한 줄이다. */
@@ -33,4 +40,6 @@ data class ExpenseItemUiModel(
     val amountText: String,
     val category: ExpenseCategory,
     val paymentMethodName: String,
+    val memo: String? = null,
+    val paymentMethod: PaymentMethod? = null,
 )

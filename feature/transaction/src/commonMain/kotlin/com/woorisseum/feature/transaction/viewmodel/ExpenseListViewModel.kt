@@ -3,6 +3,10 @@ package com.woorisseum.feature.transaction.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.woorisseum.core.domain.transaction.card.CardRepository
+import com.woorisseum.core.domain.transaction.model.Expense
+import com.woorisseum.feature.transaction.model.ExpenseSearchPeriod
+import com.woorisseum.feature.transaction.model.ExpenseSearchPreset
+import com.woorisseum.feature.transaction.model.toPeriod
 import com.woorisseum.feature.transaction.model.ExpenseDateRange
 import com.woorisseum.feature.transaction.model.ExpenseListFilters
 import com.woorisseum.feature.transaction.model.ExpenseListUiEffect
@@ -17,13 +21,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.YearMonth
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 import kotlinx.datetime.minusMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.plusMonth
 
 /** 월·분류 선택과 이동 요청을 처리한다. 데이터 조회는 Repository 연결 단계에서 추가한다. */
-class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(emptyMonthState(initialMonth))
+class ExpenseListViewModel(
+    initialMonth: YearMonth,
+    cardRepository: CardRepository,
+    initialExpenses: List<Expense>? = null,
+    private val today: () -> LocalDate = { Clock.System.todayIn(TimeZone.currentSystemDefault()) },
+) : ViewModel() {
+    // 운영 DI는 null이다. Preview·검증에서만 목록을 주입하며 실제 조회 연결은 별도 작업이다.
+    private val expenses = initialExpenses?.toList()
+    private fun present(state: ExpenseListUiState) = expenses?.let { state.withExpenseResults(it) } ?: state
+    private val _uiState = MutableStateFlow(present(emptyMonthState(initialMonth)))
     val uiState = _uiState.asStateFlow()
 
     // 화면이 비활성 상태일 때 발생한 이동 요청은 재생하지 않는다.
@@ -38,7 +54,7 @@ class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardReposito
                     val selected = state.filters.paymentMethod?.takeIf { filter ->
                         methods.any { it.toExpensePaymentFilter() == filter }
                     }
-                    state.copy(availablePaymentMethods = methods, filters = state.filters.copy(paymentMethod = selected))
+                    present(state.copy(availablePaymentMethods = methods, filters = state.filters.copy(paymentMethod = selected)))
                 }
             }
         }
@@ -46,14 +62,28 @@ class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardReposito
 
     fun onIntent(intent: ExpenseListUiIntent) {
         when (intent) {
+            ExpenseListUiIntent.OpenSearch -> _uiState.update { if (it.isSearchOpen) it else present(it.copy(isSearchOpen = true, searchPeriod = ExpenseSearchPeriod())) }
+            ExpenseListUiIntent.CloseSearch -> _uiState.update { present(it.copy(isSearchOpen = false, searchQuery = "", searchPeriod = ExpenseSearchPeriod())) }
+            ExpenseListUiIntent.ClearSearch -> _uiState.update { present(it.copy(searchQuery = "")) }
+            is ExpenseListUiIntent.SearchQueryChanged -> _uiState.update { present(it.copy(searchQuery = intent.query)) }
+            is ExpenseListUiIntent.SelectSearchPreset -> {
+                if (intent.preset != ExpenseSearchPreset.CUSTOM) {
+                    val period = intent.preset.toPeriod(today())
+                    _uiState.update { if (it.isSearchOpen) present(it.copy(searchPeriod = period)) else it }
+                }
+            }
+            is ExpenseListUiIntent.SelectSearchRange -> _uiState.update {
+                if (!it.isSearchOpen || intent.start > intent.endInclusive) it else present(it.copy(
+                    searchPeriod = ExpenseSearchPeriod(ExpenseSearchPreset.CUSTOM, ExpenseDateRange(intent.start, intent.endInclusive))))
+            }
             ExpenseListUiIntent.PreviousMonth -> _uiState.update {
-                emptyMonthState(it.month.minusMonth(), it)
+                present(emptyMonthState(it.month.minusMonth(), it))
             }
             ExpenseListUiIntent.NextMonth -> _uiState.update {
-                emptyMonthState(it.month.plusMonth(), it)
+                present(emptyMonthState(it.month.plusMonth(), it))
             }
             is ExpenseListUiIntent.SelectCategory -> _uiState.update {
-                it.copy(filters = it.filters.copy(category = intent.category))
+                present(it.copy(filters = it.filters.copy(category = intent.category)))
             }
             is ExpenseListUiIntent.SelectDateRange -> _uiState.update { state ->
                 if (intent.start > intent.endInclusive || intent.start < state.month.firstDay ||
@@ -63,17 +93,19 @@ class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardReposito
                     val range = if (intent.start == state.month.firstDay && intent.endInclusive == state.month.lastDay) {
                         null
                     } else ExpenseDateRange(intent.start, intent.endInclusive)
-                    state.copy(filters = state.filters.copy(dateRange = range))
+                    present(state.copy(filters = state.filters.copy(dateRange = range)))
                 }
             }
             is ExpenseListUiIntent.SelectPaymentMethod -> _uiState.update { state ->
                 if (intent.paymentMethod == null || state.availablePaymentMethods.any {
                     it.toExpensePaymentFilter() == intent.paymentMethod
-                }) state.copy(filters = state.filters.copy(paymentMethod = intent.paymentMethod))
+                }) present(state.copy(filters = state.filters.copy(paymentMethod = intent.paymentMethod)))
                 else state
             }
             ExpenseListUiIntent.ResetFilters -> _uiState.update {
-                it.copy(filters = ExpenseListFilters())
+                present(if (it.isSearchOpen) it.copy(
+                    filters = it.filters.copy(category = null, paymentMethod = null), searchPeriod = ExpenseSearchPeriod())
+                    else it.copy(filters = ExpenseListFilters()))
             }
             is ExpenseListUiIntent.OpenExpense -> viewModelScope.launch {
                 _effects.emit(ExpenseListUiEffect.NavigateToDetail(intent.expenseId))
@@ -82,7 +114,7 @@ class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardReposito
                 _effects.emit(ExpenseListUiEffect.NavigateToAddExpense)
             }
             is ExpenseListUiIntent.ShowMonth -> _uiState.update {
-                emptyMonthState(intent.month, it).copy(filters = ExpenseListFilters())
+                present(emptyMonthState(intent.month, it).copy(filters = ExpenseListFilters(), isSearchOpen = false, searchQuery = "", searchPeriod = ExpenseSearchPeriod()))
             }
         }
     }
@@ -98,6 +130,9 @@ class ExpenseListViewModel(initialMonth: YearMonth, cardRepository: CardReposito
         )
         return if (previousState == null) state else state.copy(
             availablePaymentMethods = previousState.availablePaymentMethods,
+            isSearchOpen = previousState.isSearchOpen,
+            searchQuery = previousState.searchQuery,
+            searchPeriod = previousState.searchPeriod,
         )
     }
 }
