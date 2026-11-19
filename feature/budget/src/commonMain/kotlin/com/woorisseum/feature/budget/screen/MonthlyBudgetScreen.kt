@@ -68,6 +68,7 @@ fun MonthlyBudgetScreen(
     onIntent: (MonthlyBudgetUiIntent) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
 ) {
     Scaffold(
         modifier = modifier,
@@ -77,7 +78,7 @@ fun MonthlyBudgetScreen(
             TopAppBar(
                 title = { Text(stringResource(Res.string.budget_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    if (showBackButton) IconButton(onClick = onBack) {
                         Icon(painterResource(Res.drawable.budget_chevron_left),
                             stringResource(Res.string.budget_back))
                     }

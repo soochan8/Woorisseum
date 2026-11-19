@@ -37,6 +37,7 @@ fun ShoppingListScreen(
     onIntent: (ShoppingListUiIntent) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
     onOpenHistory: () -> Unit = {},
 ) {
     val focus = LocalFocusManager.current
@@ -59,7 +60,7 @@ fun ShoppingListScreen(
         modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_title)) },
-            navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
+            navigationIcon = { if (showBackButton) TextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
             actions = { TextButton(onClick = onOpenHistory) {
                 Text(stringResource(Res.string.shopping_history_count, state.trips.size))
             } }) },

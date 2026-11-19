@@ -22,6 +22,7 @@ fun MonthlyBudgetRoute(
     onBack: () -> Unit,
     onViewExpenses: (YearMonth) -> Unit,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
     viewModel: MonthlyBudgetViewModel = koinViewModel(parameters = { parametersOf(initialMonth) }),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -36,5 +37,5 @@ fun MonthlyBudgetRoute(
             }
         }
     }
-    MonthlyBudgetScreen(state, viewModel::onIntent, onBack, modifier)
+    MonthlyBudgetScreen(state, viewModel::onIntent, onBack, modifier, showBackButton = showBackButton)
 }

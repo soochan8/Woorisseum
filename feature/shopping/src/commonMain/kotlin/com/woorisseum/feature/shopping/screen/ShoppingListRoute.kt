@@ -15,10 +15,11 @@ fun ShoppingListRoute(
     onBack: () -> Unit,
     onOpenHistory: () -> Unit,
     modifier: Modifier = Modifier,
+    showBackButton: Boolean = true,
     viewModel: ShoppingListViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    ShoppingListScreen(state, viewModel::onIntent, onBack, modifier, onOpenHistory)
+    ShoppingListScreen(state, viewModel::onIntent, onBack, modifier, onOpenHistory = onOpenHistory, showBackButton = showBackButton)
     if (state.finishItemIds != null) {
         ShoppingFinishDialog(state.itemsToFinish.size, state.items.size - state.itemsToFinish.size,
             onCancel = { viewModel.onIntent(ShoppingListUiIntent.CancelFinish) },

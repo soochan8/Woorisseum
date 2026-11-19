@@ -49,7 +49,7 @@
     <string name="shopping_finish">마치기</string>
     <string name="shopping_history_count">기록 %1$d</string>
     <string name="shopping_history_title">장보기 기록</string>
-    <string name="shopping_history_notice">임시 기록이에요. 장보기에서 나가면 목록과 기록이 모두 사라져요.</string>
+    <string name="shopping_history_notice">임시 기록이에요. 앱을 다시 시작하면 목록과 기록이 모두 사라져요.</string>
     <string name="shopping_history_empty">아직 마친 장보기가 없어요</string>
     <string name="shopping_history_date">%1$d년 %2$d월 %3$d일 장보기 · %4$s:%5$s</string>
     <string name="shopping_history_item_count">구매한 물건 %1$d개</string>
