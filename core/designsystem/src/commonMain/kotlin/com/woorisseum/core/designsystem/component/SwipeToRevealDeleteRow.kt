@@ -1,4 +1,4 @@
-package com.woorisseum.feature.shopping.screen
+package com.woorisseum.core.designsystem.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -21,21 +21,22 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.woorisseum.feature.shopping.resources.*
 import kotlinx.coroutines.flow.distinctUntilChanged
-import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
 private enum class RevealPosition { Closed, Open }
 
 /** 스와이프는 버튼만 노출한다. 삭제는 버튼·접근성 동작으로 명시적으로 요청할 때만 수행한다. */
 @Composable
-internal fun ShoppingSwipeToDeleteRow(
+fun SwipeToRevealDeleteRow(
     itemId: String,
     revealed: Boolean,
     onReveal: (String?) -> Unit,
     deleteLabel: String,
+    deleteText: String,
     onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val actionWidth = 80.dp
@@ -59,22 +60,22 @@ internal fun ShoppingSwipeToDeleteRow(
             }
         }
     }
-    Box(Modifier.fillMaxWidth().clipToBounds()) {
+    Box(modifier.fillMaxWidth().clipToBounds()) {
         if (drag.offset < -0.5f || revealed) {
             Box(Modifier.matchParentSize()) {
-                TextButton(onClick = onDelete,
+                TextButton(onClick = onDelete, enabled = enabled,
                     modifier = Modifier.align(Alignment.CenterEnd).width(actionWidth).fillMaxHeight()
                         .background(MaterialTheme.colorScheme.error)
                         .semantics { contentDescription = deleteLabel }) {
-                    Text(stringResource(Res.string.shopping_delete), color = MaterialTheme.colorScheme.onError)
+                    Text(deleteText, color = MaterialTheme.colorScheme.onError)
                 }
             }
         }
         Box(Modifier.fillMaxWidth()
             .offset { IntOffset((if (drag.offset.isNaN()) 0f else drag.offset).roundToInt(), 0) }
             .background(MaterialTheme.colorScheme.background)
-            .anchoredDraggable(drag, orientation = Orientation.Horizontal)
-            .semantics { customActions = listOf(CustomAccessibilityAction(deleteLabel) { onDelete(); true }) }) {
+            .anchoredDraggable(drag, orientation = Orientation.Horizontal, enabled = enabled)
+            .semantics { customActions = if (enabled) listOf(CustomAccessibilityAction(deleteLabel) { onDelete(); true }) else emptyList() }) {
             content()
         }
     }

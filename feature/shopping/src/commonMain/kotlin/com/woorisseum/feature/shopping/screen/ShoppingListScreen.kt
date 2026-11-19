@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.woorisseum.core.designsystem.component.SwipeToRevealDeleteRow
 import com.woorisseum.core.domain.shopping.ShoppingItem
 import com.woorisseum.feature.shopping.model.*
 import com.woorisseum.feature.shopping.resources.*
@@ -160,7 +161,7 @@ private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiStat
     val checkLabel = stringResource(if (item.purchased) Res.string.shopping_uncomplete_item
         else Res.string.shopping_complete_item, item.name)
     val deleteLabel = stringResource(Res.string.shopping_delete_item, item.name)
-    ShoppingSwipeToDeleteRow(item.id, revealed, onReveal, deleteLabel,
+    SwipeToRevealDeleteRow(item.id, revealed, onReveal, deleteLabel, stringResource(Res.string.shopping_delete),
         onDelete = { onReveal(null); onIntent(ShoppingListUiIntent.DeleteItem(item.id)) }) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
             Checkbox(checked = item.purchased,
