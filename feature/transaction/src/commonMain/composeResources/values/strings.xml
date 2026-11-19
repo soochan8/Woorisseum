@@ -92,4 +92,5 @@
     <string name="fixed_expense_unknown_payment">확인 전</string>
     <string name="fixed_expense_editor_notice">계획 등록은 실제 지출 기록과 별개예요. 아직 저장 기능이 연결되지 않아 입력한 내용은 저장되지 않아요.</string>
     <string name="fixed_expense_storage_unavailable">입력은 확인했어요. 저장 기능 연결 전이라 변경 내용은 저장되지 않았어요.</string>
+    <string name="expense_open_shopping">장보기</string>
 </resources>

@@ -2,6 +2,7 @@ package com.woorisseum.feature.transaction.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -127,16 +128,20 @@ private fun ExpenseHeader(
     onIntent: (ExpenseListUiIntent) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
-        Row(
+        FlowRow(
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(Res.string.expense_list_title),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).widthIn(min = 64.dp),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
             )
+            TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewShopping) }) {
+                Text(stringResource(Res.string.expense_open_shopping))
+            }
             TextButton(onClick = { onIntent(ExpenseListUiIntent.ViewFixedExpenses) }) {
                 Text(stringResource(Res.string.fixed_expense_title))
             }

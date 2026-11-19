@@ -22,5 +22,6 @@ sealed interface ExpenseListUiIntent {
 
     data object AddExpense : ExpenseListUiIntent
     data object ViewFixedExpenses : ExpenseListUiIntent
+    data object ViewShopping : ExpenseListUiIntent
     data object ViewBudget : ExpenseListUiIntent
 }

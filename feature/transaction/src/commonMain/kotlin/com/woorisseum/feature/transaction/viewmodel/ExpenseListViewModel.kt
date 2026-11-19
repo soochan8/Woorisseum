@@ -69,6 +69,9 @@ class ExpenseListViewModel(initialMonth: YearMonth) : ViewModel() {
                 val month = _uiState.value.month
                 viewModelScope.launch { _effects.emit(ExpenseListUiEffect.NavigateToFixedExpenses(month)) }
             }
+            ExpenseListUiIntent.ViewShopping -> viewModelScope.launch {
+                _effects.emit(ExpenseListUiEffect.NavigateToShopping)
+            }
             ExpenseListUiIntent.ViewBudget -> {
                 val month = _uiState.value.month
                 viewModelScope.launch { _effects.emit(ExpenseListUiEffect.NavigateToBudget(month)) }

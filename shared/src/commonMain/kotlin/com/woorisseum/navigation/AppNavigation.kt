@@ -1,10 +1,13 @@
 package com.woorisseum.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.woorisseum.feature.shopping.screen.ShoppingListRoute
+import com.woorisseum.feature.shopping.screen.ShoppingHistoryRoute
 import com.woorisseum.feature.budget.screen.MonthlyBudgetRoute
 import com.woorisseum.feature.transaction.screen.ExpenseDetailRoute
 import com.woorisseum.feature.transaction.screen.ExpenseEditRoute
@@ -32,6 +35,12 @@ private data class FixedExpenseListDestination(val year: Int, val month: Int)
 private data class FixedExpenseEditorDestination(val year: Int, val month: Int, val planId: String? = null)
 
 @Serializable
+private data object ShoppingListDestination
+
+@Serializable
+private data object ShoppingHistoryDestination
+
+@Serializable
 private data object ExpenseEntryDestination
 
 @Serializable
@@ -49,6 +58,7 @@ internal fun AppNavigation() {
                 onOpenExpense = { id ->
                     navController.navigate(ExpenseDetailDestination(id)) { launchSingleTop = true }
                 },
+                onOpenShopping = { navController.navigate(ShoppingListDestination) { launchSingleTop = true } },
                 onAddExpense = {
                     navController.navigate(ExpenseEntryDestination) { launchSingleTop = true }
                 },
@@ -86,6 +96,15 @@ internal fun AppNavigation() {
             val destination = entry.toRoute<FixedExpenseEditorDestination>()
             FixedExpenseEditorRoute(YearMonth(destination.year, destination.month),
                 onBack = { navController.popBackStack() }, planId = destination.planId)
+        }
+        composable<ShoppingListDestination> {
+            ShoppingListRoute(onBack = { navController.popBackStack() },
+                onOpenHistory = { navController.navigate(ShoppingHistoryDestination) { launchSingleTop = true } })
+        }
+        composable<ShoppingHistoryDestination> { entry ->
+            // 같은 장보기 진입의 임시 상태를 사용한다. 기록으로 이동해도 원본 목록을 초기화하지 않는다.
+            val listEntry = remember(entry) { navController.getBackStackEntry<ShoppingListDestination>() }
+            ShoppingHistoryRoute(onBack = { navController.popBackStack() }, viewModelStoreOwner = listEntry)
         }
         composable<ExpenseEntryDestination> {
             ExpenseEntryRoute(onBack = { navController.popBackStack() })
