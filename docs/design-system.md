@@ -3,7 +3,7 @@
 ## 현재 범위
 
 Android·iOS가 `core:designsystem`의 공통 Compose 구현을 사용한다. feature·domain·data에 의존하지 않는다.
-앱 전체에 청록·따뜻한 흰색의 라이트 팔레트와 대응하는 다크 팔레트를 적용한다. 기존 화면의 버튼·입력창·필터는 공통 컴포넌트를 사용한다. 화면의 정보 배치와 기능별 MVI 계약은 유지한다. 글꼴·기본 모양은 Material 기준이다.
+앱 전체에 청록·따뜻한 흰색의 라이트 팔레트와 대응하는 다크 팔레트를 적용한다. 기존 화면의 버튼·입력창·필터는 공통 컴포넌트를 사용한다. 화면의 정보 배치와 기능별 MVI 계약은 유지한다. 글자는 기본 글꼴을 사용하되 현재 사용하는 Material 타이포그래피 역할별 크기·줄 높이·굵기를 정의했다. 기본 모양은 Material 기준이다.
 
 ## 테마와 간격
 
@@ -15,6 +15,37 @@ Android·iOS가 `core:designsystem`의 공통 Compose 구현을 사용한다. fe
 - 임시 컨트롤 테마를 제거하고 `Color.kt`의 팔레트를 `WoorisseumTheme`에서 한 번 제공한다. 컴포넌트마다 MaterialTheme을 다시 감싸거나 화면별 팔레트를 만들지 않는다.
 - 주요·보조·텍스트 버튼은 `shapes.medium`(현재 12dp), 입력창·필터는 `shapes.small`(현재 8dp)을 사용한다. 화면에서 모양을 반복 선언하지 않는다.
 - 청록은 실행·선택, 옅은 회녹색은 선택 배경에 사용한다. 벽돌색은 보조 브랜드 색상으로 준비했으나 오류나 삭제 의미에 사용하지 않는다. 오류·비활성 상태는 Material의 의미와 동작을 유지한다.
+- 다크 모드는 검정에 가까운 배경 대신 차콜 회녹색을 사용한다. 배경 `#282E2B`, 기본 표면 `#303733`, 상위 표면 `#3D463F`로 구분하고 보조 글자·구분선도 함께 밝힌다.
+
+## 공통 타이포그래피
+
+스타일은 `MaterialTheme.typography`에서 가져온다. 기본 글꼴은 `FontFamily.Default`이며 Android·iOS에서 실제 글꼴과 글리프 폭은 다를 수 있다. 별도 폰트·라이브러리는 추가하지 않는다.
+
+| 용도 | 스타일 | 크기 / 줄 높이(sp) | 굵기 |
+| --- | --- | --- | --- |
+| 핵심 합계·금액 | `displaySmall` | 32 / 40 | SemiBold |
+| 큰 강조 제목 | `headlineMedium` | 24 / 32 | SemiBold |
+| 화면 제목 | `headlineSmall` | 22 / 30 | SemiBold |
+| 시트·대화상자 제목 | `titleLarge` | 20 / 28 | SemiBold |
+| 섹션 제목 | `titleMedium` | 16 / 24 | SemiBold |
+| 작은 묶음 제목 | `titleSmall` | 15 / 22 | Medium |
+| 사용처·물품명·입력·본문 | `bodyLarge` | 16 / 24 | Regular |
+| 설명 문장 | `bodyMedium` | 14 / 22 | Regular |
+| 날짜·결제수단·보조 정보 | `bodySmall` | 13 / 20 | Regular |
+| 버튼·필터 | `labelLarge` | 15 / 22 | Medium |
+| 짧은 보조 라벨 | `labelMedium` | 13 / 18 | Medium |
+| 작은 분류 표시 | `labelSmall` | 12 / 16 | Medium |
+| 핵심 금액의 통화 단위 | `amountUnit` 확장 스타일 | 22 / 30 | Regular |
+| 목록의 금액 열 | `listAmount` 확장 스타일 | 16 / 24 | Medium |
+
+- 자간은 0sp로 두고 한글을 일괄 압축하지 않는다. 크기·줄 높이 모두 sp로 사용자 글자 크기를 존중한다.
+- 핵심 금액과 목록 금액에 `tnum`을 지정한다. 지원 글꼴에서 숫자 폭을 일정하게 하는 옵션이며 금액 포맷·통화 단위·우측 정렬을 대신하지 않는다.
+- `amountUnit`과 `listAmount`는 `Typography`의 확장 속성이다. 각각 제목·본문 스타일에서 파생하므로 별도의 테마나 상태는 만들지 않는다. 사용 시 확장 속성을 import한 뒤 `MaterialTheme.typography.amountUnit` 등으로 접근한다.
+- 텍스트 색상은 사용 맥락에 맞춰 `colorScheme`에서 선택한다. TextStyle에 오류색이나 특정 기능의 색을 넣지 않는다.
+- 역할에 맞는 스타일을 선택하고 화면마다 크기·자간·굵기를 반복 지정하지 않는다. 선택 상태 강조 등 필요한 예외만 해당 화면에서 결정한다.
+- 지출·예산·고정지출·카드·장보기·관리의 화면 제목은 `headlineSmall`을 명시한다. 지출 합계의 38sp·음수 자간과 중복 SemiBold는 제거했다. 사용처·물품명은 `bodyLarge`, 지출 목록의 금액은 `listAmount`, 지출·예산 합계의 통화 단위는 `amountUnit`을 사용한다. 선택한 분류 탭의 굵기 차이는 상태 표현으로 유지한다.
+- 텍스트 크기를 맞추려고 고정 높이·최대 줄 수를 새로 강제하지 않는다. 긴 금액과 큰 글씨는 화면별 줄바꿈·가용 폭도 함께 확인해야 한다.
+- 사용하지 않는 큰 display 역할은 Material 기본값을 유지한다. 실제 용도가 생기면 기준을 정한다.
 
 ## 공통 컴포넌트
 
