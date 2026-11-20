@@ -17,7 +17,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import androidx.navigation.toRoute
@@ -44,6 +43,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 
+@Serializable private data object AppGraph
 @Serializable private data object ExpenseListDestination
 @Serializable private data object ShoppingListDestination
 @Serializable private data object MonthlyBudgetDestination
@@ -77,7 +77,7 @@ private enum class AppTab(val route: Any, val label: StringResource, val icon: D
 private fun NavHostController.selectTab(tab: AppTab) {
     if (tab.matches(currentDestination)) return
     navigate(tab.route) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
+        popUpTo<ExpenseListDestination> { saveState = true }
         launchSingleTop = true
         restoreState = true
     }
@@ -121,7 +121,7 @@ internal fun AppNavigation() {
             }
         }
     }
-    NavHost(navController, startDestination = ExpenseListDestination,
+    NavHost(navController, startDestination = ExpenseListDestination, route = AppGraph::class,
         modifier = Modifier.fillMaxSize().clipToBounds(),
         // 탭 화면은 자체 Scaffold를 가지므로 하위 화면 전환 중에도 높이가 바뀌지 않는다.
         // 기존 화면은 고정하고, 불투명한 새 화면이 덮으며 진입한다.
@@ -144,7 +144,7 @@ internal fun AppNavigation() {
         composable<ExpenseListDestination> { entry ->
             AppTabScaffold(AppTab.Expenses, navController::selectTab) { screenModifier ->
                 // 최상위 화면 상태는 탭 entry보다 오래 유지한다. 하위 입력 화면은 각 entry가 소유한다.
-                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }
                 val requestedMonth by entry.savedStateHandle.getStateFlow<String?>(REQUESTED_EXPENSE_MONTH, null).collectAsStateWithLifecycle()
                 CompositionLocalProvider(LocalViewModelStoreOwner provides sessionEntry) {
                     ExpenseListRoute(
@@ -159,7 +159,7 @@ internal fun AppNavigation() {
         }
         composable<MonthlyBudgetDestination> { entry ->
             AppTabScaffold(AppTab.Budget, navController::selectTab) { screenModifier ->
-                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }
                 val initialMonth = remember(entry) { currentMonth() }
                 CompositionLocalProvider(LocalViewModelStoreOwner provides sessionEntry) {
                     MonthlyBudgetRoute(initialMonth = initialMonth, modifier = screenModifier, showBackButton = false,
@@ -174,7 +174,7 @@ internal fun AppNavigation() {
         }
         composable<ShoppingListDestination> { entry ->
             AppTabScaffold(AppTab.Shopping, navController::selectTab) { screenModifier ->
-                val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+                val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }
                 CompositionLocalProvider(LocalViewModelStoreOwner provides sessionEntry) {
                     ShoppingListRoute(modifier = screenModifier, showBackButton = false,
                         onBack = { navController.selectTab(AppTab.Expenses) },
@@ -194,7 +194,7 @@ internal fun AppNavigation() {
             }
         }
         composable<ShoppingHistoryDestination> { entry ->
-            val sessionEntry = remember(entry) { navController.getBackStackEntry(navController.graph.id) }
+            val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }
             ShoppingHistoryRoute(onBack = navigateBack, viewModelStoreOwner = sessionEntry)
         }
         composable<ExpenseDetailDestination> { entry ->
