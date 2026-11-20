@@ -73,11 +73,11 @@ private enum class AppTab(val route: Any, val label: StringResource, val icon: D
     }
 }
 
-/** 선택된 탭을 다시 눌러도 초기화하지 않는다. 탭별 back stack과 Compose 상태를 저장·복원한다. */
+/** 최상위 탭은 교체한다. 이전 탭은 뒤로가기 스택 대신 저장 상태로 보관한다. */
 private fun NavHostController.selectTab(tab: AppTab) {
     if (tab.matches(currentDestination)) return
     navigate(tab.route) {
-        popUpTo<ExpenseListDestination> { saveState = true }
+        popUpTo<AppGraph> { saveState = true }
         launchSingleTop = true
         restoreState = true
     }
