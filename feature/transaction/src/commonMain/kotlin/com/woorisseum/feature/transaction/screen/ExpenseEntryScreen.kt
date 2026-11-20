@@ -47,7 +47,7 @@ fun ExpenseEntryScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.expense_entry_title)) },
+                title = { Text(stringResource(Res.string.expense_entry_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
                 },

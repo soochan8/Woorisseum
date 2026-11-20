@@ -38,7 +38,7 @@ fun FixedExpenseEditorScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { TopAppBar(
             title = { Text(stringResource(if (state.planId == null)
-                Res.string.fixed_expense_register_title else Res.string.fixed_expense_edit_title)) },
+                Res.string.fixed_expense_register_title else Res.string.fixed_expense_edit_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { WoorisseumTextButton(onClick = { onIntent(FixedExpenseEditorUiIntent.Cancel) }) {
                 Text(stringResource(Res.string.expense_cancel))
             } },

@@ -1,5 +1,7 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.amountUnit
+import com.woorisseum.core.designsystem.theme.listAmount
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
 import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
@@ -46,13 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
 import com.woorisseum.feature.transaction.model.ExpenseItemUiModel
 import com.woorisseum.feature.transaction.model.ExpenseListUiIntent
@@ -162,7 +162,7 @@ private fun ExpenseHeader(
     Column(Modifier.fillMaxWidth().padding(horizontal = WoorisseumSpacing.screenHorizontal)) {
         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(if (state.isSearchOpen) Res.string.expense_search_open else Res.string.expense_list_title), Modifier.weight(1f),
-                style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.headlineSmall)
             IconButton(onClick = onToggleSearch) {
                 Icon(painterResource(if (state.isSearchOpen) Res.drawable.ic_close else Res.drawable.ic_search),
                     stringResource(if (state.isSearchOpen) Res.string.expense_search_close else Res.string.expense_search_open))
@@ -207,14 +207,11 @@ private fun ExpenseHeader(
             else Text(
                 text = buildAnnotatedString {
                     append(state.totalAmountText)
-                    withStyle(SpanStyle(fontSize = 22.sp, fontWeight = FontWeight.Normal)) {
+                    withStyle(MaterialTheme.typography.amountUnit.toSpanStyle()) {
                         append(currency)
                     }
                 },
                 style = MaterialTheme.typography.displaySmall,
-                fontSize = 38.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = (-1).sp,
                 modifier = Modifier.padding(top = 4.dp),
             )
             Row(
@@ -289,7 +286,6 @@ private fun ExpenseRow(expense: ExpenseItemUiModel, onClick: () -> Unit) {
             Text(
                 text = expense.merchant.ifBlank { stringResource(Res.string.expense_unknown_merchant) },
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
             )
             Text(
                 text = stringResource(
@@ -298,7 +294,7 @@ private fun ExpenseRow(expense: ExpenseItemUiModel, onClick: () -> Unit) {
                     expense.paymentMethod?.let { paymentLabel(it) } ?: expense.paymentMethodName,
                 ),
                 modifier = Modifier.padding(top = 3.dp),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             expense.memo?.takeIf { it.isNotBlank() }?.let { memo ->
@@ -308,8 +304,7 @@ private fun ExpenseRow(expense: ExpenseItemUiModel, onClick: () -> Unit) {
         }
         Text(
             text = stringResource(Res.string.expense_amount_won, expense.amountText),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.listAmount,
             textAlign = TextAlign.End,
             modifier = Modifier.widthIn(max = 160.dp),
         )

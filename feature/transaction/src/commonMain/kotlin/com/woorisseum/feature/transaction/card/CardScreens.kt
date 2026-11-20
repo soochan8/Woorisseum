@@ -147,7 +147,7 @@ private fun CardScaffold(
     Scaffold(modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(title = { Text(title) }, navigationIcon = {
+            TopAppBar(title = { Text(title, style = MaterialTheme.typography.headlineSmall) }, navigationIcon = {
                 WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
             })
         }, bottomBar = {

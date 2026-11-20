@@ -17,7 +17,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun ManagementScreen(onOpenCards: () -> Unit, onOpenFixedExpenses: () -> Unit, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.nav_management)) }) },
+        topBar = { TopAppBar(title = { Text(stringResource(Res.string.nav_management), style = MaterialTheme.typography.headlineSmall) }) },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(vertical = 16.dp)) {
             item(key = "cards") {

@@ -1,5 +1,6 @@
 package com.woorisseum.feature.budget.screen
 
+import com.woorisseum.core.designsystem.theme.amountUnit
 import androidx.compose.foundation.layout.PaddingValues
 
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
@@ -43,14 +44,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
 import com.woorisseum.feature.budget.model.BudgetAmountInputError
 import com.woorisseum.feature.budget.model.BudgetCategoryUiModel
@@ -80,7 +78,7 @@ fun MonthlyBudgetScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.budget_title), fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(Res.string.budget_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     if (showBackButton) IconButton(onClick = onBack) {
                         Icon(painterResource(Res.drawable.budget_chevron_left),
@@ -200,8 +198,8 @@ private fun BudgetHeadlineContent(summary: BudgetSummaryUiModel) {
             val currency = stringResource(Res.string.budget_currency)
             Text(buildAnnotatedString {
                 append(amount)
-                withStyle(SpanStyle(fontSize = 22.sp, fontWeight = FontWeight.Normal)) { append(currency) }
-            }, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.SemiBold,
+                withStyle(MaterialTheme.typography.amountUnit.toSpanStyle()) { append(currency) }
+            }, style = MaterialTheme.typography.displaySmall,
                 color = if (summary.headline == BudgetHeadline.EXCEEDED) MaterialTheme.colorScheme.error
                 else MaterialTheme.colorScheme.onSurface)
         }

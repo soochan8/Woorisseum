@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.woorisseum.core.domain.transaction.fixed.FixedExpensePaymentStatus
@@ -35,7 +34,7 @@ fun FixedExpenseListScreen(
     Scaffold(
         modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.fixed_expense_title)) },
+        topBar = { TopAppBar(title = { Text(stringResource(Res.string.fixed_expense_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) } }) },
         bottomBar = {
             WoorisseumBottomActionBar {
@@ -57,7 +56,7 @@ fun FixedExpenseListScreen(
                     Text(stringResource(Res.string.fixed_expense_total), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(state.summary?.totalAmountText?.let { stringResource(Res.string.expense_amount_won, it) }
                         ?: stringResource(Res.string.fixed_expense_waiting),
-                        style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.displaySmall)
                     Text(state.summary?.paidAmountText?.let { stringResource(Res.string.fixed_expense_paid_total, it) }
                         ?: stringResource(Res.string.fixed_expense_payment_waiting),
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
@@ -93,7 +92,7 @@ private fun FixedExpenseRow(item: FixedExpenseItemUiModel, onClick: () -> Unit) 
     Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(item.name ?: fixedExpenseTypeLabel(item.type), fontWeight = FontWeight.Medium)
+            Text(item.name ?: fixedExpenseTypeLabel(item.type), style = MaterialTheme.typography.bodyLarge)
             Text(stringResource(Res.string.fixed_expense_item_meta, fixedExpenseTypeLabel(item.type),
                 item.dueDate.month.number, item.dueDate.day), style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)

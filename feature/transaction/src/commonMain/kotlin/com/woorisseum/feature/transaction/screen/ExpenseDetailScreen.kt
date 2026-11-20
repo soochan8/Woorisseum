@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
@@ -35,7 +34,7 @@ fun ExpenseDetailScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.expense_detail_title)) },
+                title = { Text(stringResource(Res.string.expense_detail_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
                 },
@@ -61,7 +60,7 @@ fun ExpenseDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 Text(stringResource(Res.string.expense_amount_won, detail.amountText),
-                    style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.SemiBold)
+                    style = MaterialTheme.typography.displaySmall)
                 Text(detail.merchant ?: stringResource(Res.string.expense_unknown_merchant),
                     style = MaterialTheme.typography.titleMedium)
                 DetailRow(stringResource(Res.string.expense_date_label),

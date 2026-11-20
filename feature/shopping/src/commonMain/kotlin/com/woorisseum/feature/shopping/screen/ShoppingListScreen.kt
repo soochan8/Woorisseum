@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -65,7 +64,7 @@ fun ShoppingListScreen(
     Scaffold(
         modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_title)) },
+        topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { if (showBackButton) WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
             actions = { WoorisseumTextButton(onClick = onOpenHistory) {
                 Text(stringResource(Res.string.shopping_history_count, state.trips.size))
@@ -124,7 +123,7 @@ fun ShoppingListScreen(
             }
             item(key = "pending-header") {
                 Text(stringResource(Res.string.shopping_pending_count, pending.size),
-                    style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    style = MaterialTheme.typography.titleMedium)
             }
             if (pending.isEmpty()) {
                 item(key = "empty") {

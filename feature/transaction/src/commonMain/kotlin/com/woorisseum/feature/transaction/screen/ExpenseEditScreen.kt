@@ -34,7 +34,7 @@ fun ExpenseEditScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.expense_edit_title)) },
+                title = { Text(stringResource(Res.string.expense_edit_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     WoorisseumTextButton(onClick = { onIntent(ExpenseEditUiIntent.Cancel) }) {
                         Text(stringResource(Res.string.expense_cancel))

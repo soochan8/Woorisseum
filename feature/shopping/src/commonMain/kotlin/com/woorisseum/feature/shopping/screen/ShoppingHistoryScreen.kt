@@ -32,7 +32,7 @@ fun ShoppingHistoryRoute(onBack: () -> Unit, viewModelStoreOwner: ViewModelStore
 fun ShoppingHistoryScreen(trips: List<ShoppingTrip>, onBack: () -> Unit, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_history_title)) },
+        topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_history_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } }) },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding),
