@@ -56,6 +56,7 @@ Android·iOS가 `core:designsystem`의 공통 Compose 구현을 사용한다. fe
 | `WoorisseumTextButton` | 취소·닫기 등 강조를 낮춘 동작, 최소 높이 48dp |
 | `WoorisseumTextField` | 공통 포커스 색상과 입력 모양. 입력값·오류·문구·키보드 정책은 호출자가 전달 |
 | `WoorisseumFilterChip` | 선택·미선택·비활성 필터의 공통 표현. 카테고리 정책은 feature 소유 |
+| `WoorisseumTopAppBar` | 화면 배경과 동일한 일반·스크롤 배경, 공통 제목 스타일. 이동·액션은 호출자가 전달 |
 | `WoorisseumBottomActionBar` | 하단 실행 영역의 배경, 공통 여백, 시스템 내비게이션 바 inset. 여러 버튼이나 입력 영역도 슬롯으로 배치 |
 | `SwipeToRevealDeleteRow` | 스와이프로 삭제 버튼 노출, 명시적인 삭제 콜백과 접근성 동작 |
 
@@ -65,7 +66,7 @@ Android·iOS가 `core:designsystem`의 공통 Compose 구현을 사용한다. fe
 
 공통 컴포넌트는 Material 동작·접근성 위에 앱의 표현 기준을 적용한다. 모든 Material API를 그대로 복제하지 않는다.
 지출·검색·고정지출·카드·예산·장보기 화면과 대화상자의 버튼·입력창·필터에 연결했다. 검색창의 지우기 아이콘, 키보드 동작, 여러 줄 메모, 비활성·오류 상태는 화면이 전달한다. 하단 액션 영역과 화면 좌우 간격도 공통 기준을 사용한다. 스와이프 삭제는 오류색을 사용하는 기존 전용 컴포넌트를 유지한다.
-앱 바 등 스타일이 확정되지 않은 요소는 Material 컴포넌트를 유지한다.
+앱 바는 `WoorisseumTopAppBar`로 통일한다. 배경에 직접 제목을 배치하는 지출 헤더도 동일한 `background` 색상을 사용한다.
 기능 전용 폼, 금액 표시 변환, 결제수단·카테고리 정책은 feature에 유지한다.
 
 ## 확인

@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.fixed
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
 import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
@@ -34,7 +35,7 @@ fun FixedExpenseListScreen(
     Scaffold(
         modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.fixed_expense_title), style = MaterialTheme.typography.headlineSmall) },
+        topBar = { WoorisseumTopAppBar(title = { Text(stringResource(Res.string.fixed_expense_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) } }) },
         bottomBar = {
             WoorisseumBottomActionBar {

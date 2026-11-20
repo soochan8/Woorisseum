@@ -1,5 +1,6 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.core.designsystem.component.WoorisseumSecondaryButton
@@ -64,7 +65,7 @@ fun ShoppingListScreen(
     Scaffold(
         modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_title), style = MaterialTheme.typography.headlineSmall) },
+        topBar = { WoorisseumTopAppBar(title = { Text(stringResource(Res.string.shopping_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { if (showBackButton) WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
             actions = { WoorisseumTextButton(onClick = onOpenHistory) {
                 Text(stringResource(Res.string.shopping_history_count, state.trips.size))

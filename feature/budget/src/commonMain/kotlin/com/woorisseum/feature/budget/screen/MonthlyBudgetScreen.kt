@@ -1,5 +1,6 @@
 package com.woorisseum.feature.budget.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.amountUnit
 import androidx.compose.foundation.layout.PaddingValues
 
@@ -37,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,7 +77,7 @@ fun MonthlyBudgetScreen(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(
+            WoorisseumTopAppBar(
                 title = { Text(stringResource(Res.string.budget_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     if (showBackButton) IconButton(onClick = onBack) {

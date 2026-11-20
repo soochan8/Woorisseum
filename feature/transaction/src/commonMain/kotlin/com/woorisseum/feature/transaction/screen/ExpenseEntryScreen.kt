@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -46,7 +46,7 @@ fun ExpenseEntryScreen(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(
+            WoorisseumTopAppBar(
                 title = { Text(stringResource(Res.string.expense_entry_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }

@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.*
@@ -33,7 +34,7 @@ fun ExpenseDetailScreen(
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(
+            WoorisseumTopAppBar(
                 title = { Text(stringResource(Res.string.expense_detail_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }

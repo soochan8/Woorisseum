@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.card
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -147,7 +148,7 @@ private fun CardScaffold(
     Scaffold(modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            TopAppBar(title = { Text(title, style = MaterialTheme.typography.headlineSmall) }, navigationIcon = {
+            WoorisseumTopAppBar(title = { Text(title, style = MaterialTheme.typography.headlineSmall) }, navigationIcon = {
                 WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
             })
         }, bottomBar = {

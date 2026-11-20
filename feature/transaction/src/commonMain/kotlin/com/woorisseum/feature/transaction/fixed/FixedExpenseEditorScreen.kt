@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.fixed
 
+import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import com.woorisseum.core.designsystem.component.WoorisseumTextField
@@ -36,7 +37,7 @@ fun FixedExpenseEditorScreen(
     Scaffold(
         modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { TopAppBar(
+        topBar = { WoorisseumTopAppBar(
             title = { Text(stringResource(if (state.planId == null)
                 Res.string.fixed_expense_register_title else Res.string.fixed_expense_edit_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { WoorisseumTextButton(onClick = { onIntent(FixedExpenseEditorUiIntent.Cancel) }) {
