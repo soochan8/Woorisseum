@@ -20,9 +20,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.theme.WoorisseumTheme
+import com.woorisseum.core.designsystem.theme.amountUnit
+import com.woorisseum.core.designsystem.theme.listAmount
 
 @Preview(name = "디자인 시스템 · 라이트", widthDp = 360, locale = "ko")
 @Composable
@@ -63,10 +67,19 @@ private fun DesignSystemSamples() {
                         colors.onSurface,
                     ).forEach { color -> Box(Modifier.size(40.dp).background(color, MaterialTheme.shapes.small)) }
                 }
-                Text("금액·화면 제목", style = MaterialTheme.typography.headlineSmall)
+                Text("지출 · 화면 제목", style = MaterialTheme.typography.headlineSmall)
+                Text(buildAnnotatedString {
+                    append("1,234,567")
+                    withStyle(MaterialTheme.typography.amountUnit.toSpanStyle()) { append("원") }
+                }, style = MaterialTheme.typography.displaySmall)
+                Text("목록 금액 17,000원", style = MaterialTheme.typography.listAmount)
+                Text("이번 달 지출 · 섹션 제목", style = MaterialTheme.typography.titleMedium)
                 Text("본문과 목록에 사용하는 글자", style = MaterialTheme.typography.bodyLarge)
+                Text("설명 문장은 넉넉한 줄 높이로 표시합니다. 글자가 커지면 자연스럽게 줄바꿈합니다.",
+                    style = MaterialTheme.typography.bodyMedium)
                 Text("보조 정보와 안내", style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("짧은 분류 표시", style = MaterialTheme.typography.labelSmall)
                 WoorisseumPrimaryButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth()) {
                     Text("사용할 수 없는 동작")
                 }
