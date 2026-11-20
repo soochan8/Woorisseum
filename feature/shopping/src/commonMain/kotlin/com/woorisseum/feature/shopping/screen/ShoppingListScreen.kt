@@ -6,6 +6,8 @@ import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.core.designsystem.component.WoorisseumSecondaryButton
 import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import com.woorisseum.core.designsystem.component.WoorisseumTextField
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
@@ -48,6 +51,10 @@ fun ShoppingListScreen(
 ) {
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
+    val hideKeyboard: () -> Unit = {
+        focus.clearFocus()
+        keyboard?.hide()
+    }
     var revealedItemId by remember { mutableStateOf<String?>(null) }
     val onRevealItem: (String?) -> Unit = { itemId ->
         revealedItemId = itemId
@@ -57,23 +64,32 @@ fun ShoppingListScreen(
         }
     }
     val listState = rememberLazyListState()
+    val dragging by listState.interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(dragging) {
+        if (dragging) hideKeyboard()
+    }
     LaunchedEffect(listState.isScrollInProgress, state.editor) {
         if (listState.isScrollInProgress || state.editor != null) revealedItemId = null
     }
     val pending = state.pendingItems
     val purchased = state.purchasedItems
     Scaffold(
-        modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier.imePadding().pointerInput(focus, keyboard) {
+            // 자식 버튼·입력창이 소비하지 않은 빈 공간의 탭만 처리한다.
+            detectTapGestures(onTap = { focus.clearFocus(); keyboard?.hide() })
+        }, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { WoorisseumTopAppBar(title = { Text(stringResource(Res.string.shopping_title), style = MaterialTheme.typography.headlineSmall) },
             navigationIcon = { if (showBackButton) WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
-            actions = { WoorisseumTextButton(onClick = onOpenHistory) {
-                Text(stringResource(Res.string.shopping_history_count, state.trips.size))
-            } }) },
+            actions = {
+                WoorisseumTextButton(onClick = { hideKeyboard(); onOpenHistory() }) {
+                    Text(stringResource(Res.string.shopping_history_count, state.trips.size))
+                }
+            }) },
         bottomBar = {
             WoorisseumBottomActionBar {
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    ShoppingCategorySelector(state.quickCategory) { onIntent(ShoppingListUiIntent.QuickCategoryChanged(it)) }
+                    ShoppingCategorySelector(state.quickCategory, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.QuickCategoryChanged(it)) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         WoorisseumTextField(
                             value = state.quickNameInput,
@@ -82,7 +98,7 @@ fun ShoppingListScreen(
                             isError = state.quickNameError != null,
                             singleLine = true, modifier = Modifier.weight(1f).onFocusChanged { if (it.isFocused) revealedItemId = null },
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = { onIntent(ShoppingListUiIntent.AddItem) }),
+                            keyboardActions = KeyboardActions(onDone = { hideKeyboard() }),
                         )
                         WoorisseumPrimaryButton(onClick = { onIntent(ShoppingListUiIntent.AddItem) }) {
                             Text(stringResource(Res.string.shopping_add))
@@ -119,6 +135,7 @@ fun ShoppingListScreen(
             item(key = "category-filter") {
                 ShoppingCategoryFilters(state.categoryFilter) {
                     revealedItemId = null
+                    hideKeyboard()
                     onIntent(ShoppingListUiIntent.CategoryFilterChanged(it))
                 }
             }
@@ -140,7 +157,7 @@ fun ShoppingListScreen(
                 }
             }
             items(pending, key = { it.id }) { item -> ShoppingItemRow(item, state.presence, onIntent,
-                    revealed = revealedItemId == item.id, onReveal = onRevealItem) }
+                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard) }
             item(key = "purchased-header") {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 WoorisseumTextButton(onClick = { revealedItemId = null; onIntent(ShoppingListUiIntent.TogglePurchasedSection) }, enabled = purchased.isNotEmpty()) {
@@ -151,7 +168,7 @@ fun ShoppingListScreen(
             }
             if (state.purchasedExpanded) {
                 items(purchased, key = { it.id }) { item -> ShoppingItemRow(item, state.presence, onIntent,
-                    revealed = revealedItemId == item.id, onReveal = onRevealItem) }
+                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard) }
             }
         }
     }
@@ -159,7 +176,8 @@ fun ShoppingListScreen(
 
 @Composable
 private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiState,
-    onIntent: (ShoppingListUiIntent) -> Unit, revealed: Boolean, onReveal: (String?) -> Unit) {
+    onIntent: (ShoppingListUiIntent) -> Unit, revealed: Boolean, onReveal: (String?) -> Unit,
+    onBeforeAction: () -> Unit) {
     val live = presence as? ShoppingPresenceUiState.Connected
     val editing = live?.editing?.get(item.id).orEmpty()
     val recent = live?.recentChanges?.get(item.id)
@@ -167,15 +185,15 @@ private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiStat
         else Res.string.shopping_complete_item, item.name)
     val deleteLabel = stringResource(Res.string.shopping_delete_item, item.name)
     SwipeToRevealDeleteRow(item.id, revealed, onReveal, deleteLabel, stringResource(Res.string.shopping_delete),
-        onDelete = { onReveal(null); onIntent(ShoppingListUiIntent.DeleteItem(item.id)) }) {
+        onDelete = { onBeforeAction(); onReveal(null); onIntent(ShoppingListUiIntent.DeleteItem(item.id)) }) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
             Checkbox(checked = item.purchased,
-                onCheckedChange = { onReveal(null); onIntent(ShoppingListUiIntent.SetPurchased(item.id, it)) },
+                onCheckedChange = { onBeforeAction(); onReveal(null); onIntent(ShoppingListUiIntent.SetPurchased(item.id, it)) },
                 modifier = Modifier.semantics { contentDescription = checkLabel })
             val editLabel = stringResource(Res.string.shopping_edit_item, item.name)
             Column(Modifier.weight(1f).background(if (recent != null) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f)
                 else Color.Transparent).clickable(role = Role.Button, onClickLabel = editLabel,
-                onClick = { if (revealed) onReveal(null) else { onReveal(null); onIntent(ShoppingListUiIntent.OpenEditor(item.id)) } }).heightIn(min = 48.dp).padding(vertical = 12.dp),
+                onClick = { onBeforeAction(); if (revealed) onReveal(null) else { onReveal(null); onIntent(ShoppingListUiIntent.OpenEditor(item.id)) } }).heightIn(min = 48.dp).padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(item.name, Modifier.weight(1f), textDecoration = if (item.purchased) TextDecoration.LineThrough else null,

@@ -16,10 +16,10 @@ import org.jetbrains.compose.resources.stringResource
 
 /** 빠른 추가와 수정 시트에서 같은 선택지를 사용한다. null로 분류를 해제할 수 있다. */
 @Composable
-internal fun ShoppingCategorySelector(value: ShoppingCategory?, onSelect: (ShoppingCategory?) -> Unit) {
+internal fun ShoppingCategorySelector(value: ShoppingCategory?, onBeforeOpen: () -> Unit = {}, onSelect: (ShoppingCategory?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        WoorisseumSecondaryButton(onClick = { expanded = true }) {
+        WoorisseumSecondaryButton(onClick = { onBeforeOpen(); expanded = true }) {
             Text(stringResource(Res.string.shopping_category_selection, shoppingCategoryLabel(value)))
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
