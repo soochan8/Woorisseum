@@ -1,5 +1,8 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
+import com.woorisseum.core.designsystem.component.WoorisseumFilterChip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -8,11 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,13 +46,13 @@ internal fun ExpenseForm(
         ExpenseAmountInput(state.amountInput, state.amountError, { onIntent(ExpenseFormUiIntent.AmountChanged(it)) })
         Column {
             Text(stringResource(Res.string.expense_date_label), style = MaterialTheme.typography.labelLarge)
-            TextButton(onClick = { showDatePicker = true }) {
+            WoorisseumTextButton(onClick = { showDatePicker = true }) {
                 Text(stringResource(
                     Res.string.expense_date_value, state.date.year, state.date.month.number, state.date.day,
                 ))
             }
         }
-        OutlinedTextField(
+        WoorisseumTextField(
             value = state.merchantInput,
             onValueChange = { onIntent(ExpenseFormUiIntent.MerchantChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
@@ -64,7 +64,7 @@ internal fun ExpenseForm(
             Text(stringResource(Res.string.expense_category_label), style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ExpenseCategory.entries.forEach { category ->
-                    FilterChip(
+                    WoorisseumFilterChip(
                         selected = state.category == category,
                         onClick = { onIntent(ExpenseFormUiIntent.CategorySelected(category)) },
                         label = { Text(stringResource(when (category) {
@@ -80,14 +80,14 @@ internal fun ExpenseForm(
             Text(stringResource(Res.string.expense_payment_label), style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.availablePaymentMethods.forEach { method ->
-                    FilterChip(
+                    WoorisseumFilterChip(
                         selected = state.paymentMethod == method,
                         onClick = { onIntent(ExpenseFormUiIntent.PaymentMethodSelected(method)) },
                         label = { Text(paymentLabel(method)) },
                     )
                 }
             }
-            TextButton(onClick = onOpenCards) { Text(stringResource(Res.string.card_management_title)) }
+            WoorisseumTextButton(onClick = onOpenCards) { Text(stringResource(Res.string.card_management_title)) }
             if (state.paymentMethodRequired) {
                 Text(
                     stringResource(Res.string.expense_payment_required),
@@ -118,7 +118,7 @@ private fun ExpenseDateDialog(date: LocalDate, onDismiss: () -> Unit, onConfirm:
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(
+            WoorisseumTextButton(
                 enabled = pickerState.selectedDateMillis != null,
                 onClick = {
                     pickerState.selectedDateMillis?.let { millis ->
@@ -128,7 +128,7 @@ private fun ExpenseDateDialog(date: LocalDate, onDismiss: () -> Unit, onConfirm:
             ) { Text(stringResource(Res.string.expense_confirm)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.expense_cancel)) }
+            WoorisseumTextButton(onClick = onDismiss) { Text(stringResource(Res.string.expense_cancel)) }
         },
     ) { DatePicker(state = pickerState) }
 }

@@ -1,5 +1,9 @@
 package com.woorisseum.feature.transaction.fixed
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -32,19 +36,17 @@ fun FixedExpenseListScreen(
         modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { TopAppBar(title = { Text(stringResource(Res.string.fixed_expense_title)) },
-            navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) } }) },
+            navigationIcon = { WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) } }) },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Button(onClick = { onIntent(FixedExpenseListUiIntent.AddPlan) },
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 24.dp, vertical = 12.dp)) {
+            WoorisseumBottomActionBar {
+                WoorisseumPrimaryButton(onClick = { onIntent(FixedExpenseListUiIntent.AddPlan) },
+                    modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.fixed_expense_add))
                 }
             }
         },
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp),
+        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = WoorisseumSpacing.screenHorizontal),
             verticalArrangement = Arrangement.spacedBy(20.dp)) {
             item {
                 FixedExpenseMonthSelector(state.month,

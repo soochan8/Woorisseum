@@ -1,5 +1,8 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
+import com.woorisseum.core.designsystem.component.WoorisseumFilterChip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -18,15 +21,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,13 +61,10 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
     var showCustomSearchPeriod by rememberSaveable(state.isSearchOpen) { mutableStateOf(false) }
     var showPayments by rememberSaveable { mutableStateOf(false) }
     FlowRow(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        FilterChip(
-            colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
-                selectedLabelColor = MaterialTheme.colorScheme.primary),
+        WoorisseumFilterChip(
             selected = if (state.isSearchOpen) state.searchPeriod.preset != ExpenseSearchPreset.ALL else state.filters.dateRange != null,
             onClick = { if (state.isSearchOpen) showSearchPeriods = true else showDates = true },
             label = {
@@ -80,7 +77,7 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
                 } ?: stringResource(Res.string.expense_filter_date_all))
             },
         )
-        FilterChip(
+        WoorisseumFilterChip(
             selected = state.filters.paymentMethod != null,
             onClick = { showPayments = true },
             label = {
@@ -96,7 +93,7 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
         val hasFilters = state.filters.category != null || state.filters.paymentMethod != null ||
             if (state.isSearchOpen) state.searchPeriod.preset != ExpenseSearchPreset.ALL else state.filters.dateRange != null
         if (hasFilters) {
-            TextButton(onClick = { onIntent(ExpenseListUiIntent.ResetFilters) }) {
+            WoorisseumTextButton(onClick = { onIntent(ExpenseListUiIntent.ResetFilters) }) {
                 Text(stringResource(Res.string.expense_filter_reset))
             }
         }
@@ -155,7 +152,7 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showPayments = false }) { Text(stringResource(Res.string.expense_cancel)) }
+                WoorisseumTextButton(onClick = { showPayments = false }) { Text(stringResource(Res.string.expense_cancel)) }
             },
         )
     }
@@ -205,11 +202,11 @@ private fun ExpenseDateRangeDialog(
                     colors = DatePickerDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
                 )
                 Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.End) {
-                    if (restrictToMonth) TextButton(onClick = { onSelect(month.firstDay, month.lastDay) }) {
+                    if (restrictToMonth) WoorisseumTextButton(onClick = { onSelect(month.firstDay, month.lastDay) }) {
                         Text(stringResource(Res.string.expense_filter_date_all))
                     }
-                    TextButton(onClick = onDismiss) { Text(stringResource(Res.string.expense_cancel)) }
-                    TextButton(
+                    WoorisseumTextButton(onClick = onDismiss) { Text(stringResource(Res.string.expense_cancel)) }
+                    WoorisseumTextButton(
                         enabled = picker.selectedStartDateMillis != null && picker.selectedEndDateMillis != null,
                         onClick = {
                             val start = picker.selectedStartDateMillis

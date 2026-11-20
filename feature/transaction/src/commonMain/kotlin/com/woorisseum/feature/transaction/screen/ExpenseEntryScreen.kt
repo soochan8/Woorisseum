@@ -1,32 +1,29 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.feature.transaction.model.ExpenseEntryUiIntent
 import com.woorisseum.feature.transaction.model.ExpenseEntryUiState
 import com.woorisseum.feature.transaction.resources.*
@@ -52,28 +49,26 @@ fun ExpenseEntryScreen(
             TopAppBar(
                 title = { Text(stringResource(Res.string.expense_entry_title)) },
                 navigationIcon = {
-                    TextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
+                    WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
                 },
             )
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Button(
+            WoorisseumBottomActionBar {
+                WoorisseumPrimaryButton(
                     onClick = {
                         focusManager.clearFocus()
                         keyboardController?.hide()
                         onIntent(ExpenseEntryUiIntent.Submit)
                     },
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.expense_save)) }
             }
         },
     ) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding)
-                .verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp),
+                .verticalScroll(rememberScrollState()).padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             ExpenseForm(state.form, { onIntent(ExpenseEntryUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards)

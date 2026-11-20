@@ -1,5 +1,10 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumSecondaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,6 +29,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.woorisseum.core.designsystem.component.SwipeToRevealDeleteRow
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
 import com.woorisseum.core.domain.shopping.ShoppingItem
 import com.woorisseum.feature.shopping.model.*
 import com.woorisseum.feature.shopping.resources.*
@@ -60,18 +66,16 @@ fun ShoppingListScreen(
         modifier = modifier.imePadding(), containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_title)) },
-            navigationIcon = { if (showBackButton) TextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
-            actions = { TextButton(onClick = onOpenHistory) {
+            navigationIcon = { if (showBackButton) WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } },
+            actions = { WoorisseumTextButton(onClick = onOpenHistory) {
                 Text(stringResource(Res.string.shopping_history_count, state.trips.size))
             } }) },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Column(Modifier.fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                    .padding(horizontal = 24.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            WoorisseumBottomActionBar {
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     ShoppingCategorySelector(state.quickCategory) { onIntent(ShoppingListUiIntent.QuickCategoryChanged(it)) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedTextField(
+                        WoorisseumTextField(
                             value = state.quickNameInput,
                             onValueChange = { onIntent(ShoppingListUiIntent.QuickNameChanged(it)) },
                             label = { Text(stringResource(Res.string.shopping_quick_name)) },
@@ -80,14 +84,14 @@ fun ShoppingListScreen(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { onIntent(ShoppingListUiIntent.AddItem) }),
                         )
-                        Button(onClick = { onIntent(ShoppingListUiIntent.AddItem) }) {
+                        WoorisseumPrimaryButton(onClick = { onIntent(ShoppingListUiIntent.AddItem) }) {
                             Text(stringResource(Res.string.shopping_add))
                         }
                     }
                     state.quickNameError?.let { Text(shoppingNameErrorText(it),
                         color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
                     if (state.duplicateItemId != null) {
-                        TextButton(onClick = {
+                        WoorisseumTextButton(onClick = {
                             focus.clearFocus(); keyboard?.hide()
                             onIntent(ShoppingListUiIntent.OpenDuplicateItem)
                         }) { Text(stringResource(Res.string.shopping_open_existing)) }
@@ -96,7 +100,7 @@ fun ShoppingListScreen(
             }
         },
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), state = listState, contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+        LazyColumn(Modifier.fillMaxSize().padding(padding), state = listState, contentPadding = PaddingValues(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item(key = "notice") {
                 Text(stringResource(Res.string.shopping_temporary_notice), style = MaterialTheme.typography.bodySmall,
@@ -104,7 +108,7 @@ fun ShoppingListScreen(
             }
             item(key = "presence") { ShoppingPresenceHeader(state.presence) }
             item(key = "finish") {
-                OutlinedButton(onClick = {
+                WoorisseumSecondaryButton(onClick = {
                     revealedItemId = null
                     focus.clearFocus(); keyboard?.hide()
                     onIntent(ShoppingListUiIntent.RequestFinish)
@@ -139,7 +143,7 @@ fun ShoppingListScreen(
                     revealed = revealedItemId == item.id, onReveal = onRevealItem) }
             item(key = "purchased-header") {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                TextButton(onClick = { revealedItemId = null; onIntent(ShoppingListUiIntent.TogglePurchasedSection) }, enabled = purchased.isNotEmpty()) {
+                WoorisseumTextButton(onClick = { revealedItemId = null; onIntent(ShoppingListUiIntent.TogglePurchasedSection) }, enabled = purchased.isNotEmpty()) {
                     Text(stringResource(Res.string.shopping_purchased_count, purchased.size))
                     if (purchased.isNotEmpty()) Text(" · " + stringResource(if (state.purchasedExpanded)
                         Res.string.shopping_collapse else Res.string.shopping_expand))

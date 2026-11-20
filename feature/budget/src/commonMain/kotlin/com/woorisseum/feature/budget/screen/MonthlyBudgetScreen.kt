@@ -1,5 +1,11 @@
 package com.woorisseum.feature.budget.screen
 
+import androidx.compose.foundation.layout.PaddingValues
+
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,11 +33,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -91,17 +95,15 @@ fun MonthlyBudgetScreen(
             )
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                TextButton(
+            WoorisseumBottomActionBar(contentPadding = PaddingValues(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 8.dp)) {
+                WoorisseumTextButton(
                     onClick = { onIntent(MonthlyBudgetUiIntent.ViewExpenses) },
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 24.dp, vertical = 8.dp).heightIn(min = 48.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.budget_view_expenses)) }
             }
         },
     ) { padding ->
-        LazyColumn(Modifier.padding(padding).padding(horizontal = 24.dp),
+        LazyColumn(Modifier.padding(padding).padding(horizontal = WoorisseumSpacing.screenHorizontal),
             verticalArrangement = Arrangement.spacedBy(20.dp)) {
             item {
                 Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -126,7 +128,7 @@ fun MonthlyBudgetScreen(
                         Text(state.summary.budgetAmountText?.let { stringResource(Res.string.budget_won, it) }
                             ?: stringResource(Res.string.budget_unset), style = MaterialTheme.typography.titleMedium)
                     }
-                    TextButton(onClick = { onIntent(MonthlyBudgetUiIntent.EditBudget) }) {
+                    WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.EditBudget) }) {
                         Text(stringResource(if (state.summary.budgetAmountText == null)
                             Res.string.budget_set else Res.string.budget_change))
                     }
@@ -153,7 +155,7 @@ fun MonthlyBudgetScreen(
             title = { Text(stringResource(Res.string.budget_editor_title, state.month.month.number)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
+                    WoorisseumTextField(
                         value = editor.amountInput,
                         onValueChange = { onIntent(MonthlyBudgetUiIntent.AmountChanged(it)) },
                         label = { Text(stringResource(Res.string.budget_total)) },
@@ -168,12 +170,12 @@ fun MonthlyBudgetScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { onIntent(MonthlyBudgetUiIntent.ApplyBudget) }) {
+                WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.ApplyBudget) }) {
                     Text(stringResource(Res.string.budget_apply))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onIntent(MonthlyBudgetUiIntent.CancelEditing) }) {
+                WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.CancelEditing) }) {
                     Text(stringResource(Res.string.budget_cancel))
                 }
             },

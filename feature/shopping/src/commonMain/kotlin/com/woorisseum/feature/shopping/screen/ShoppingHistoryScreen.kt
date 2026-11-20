@@ -1,5 +1,6 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,7 +33,7 @@ fun ShoppingHistoryScreen(trips: List<ShoppingTrip>, onBack: () -> Unit, modifie
     Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { TopAppBar(title = { Text(stringResource(Res.string.shopping_history_title)) },
-            navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } }) },
+            navigationIcon = { WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } }) },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {

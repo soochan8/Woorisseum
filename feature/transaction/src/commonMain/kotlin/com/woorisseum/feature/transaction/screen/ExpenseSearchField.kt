@@ -1,5 +1,7 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -34,8 +36,8 @@ internal fun ExpenseSearchField(
             onFocusRequested()
         }
     }
-    Column(modifier.padding(horizontal = 24.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        OutlinedTextField(query, onQueryChange,
+    Column(modifier.padding(horizontal = WoorisseumSpacing.screenHorizontal), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        WoorisseumTextField(query, onQueryChange,
             label = { Text(stringResource(Res.string.expense_search_placeholder)) },
             modifier = Modifier.fillMaxWidth().focusRequester(focusRequester), singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),

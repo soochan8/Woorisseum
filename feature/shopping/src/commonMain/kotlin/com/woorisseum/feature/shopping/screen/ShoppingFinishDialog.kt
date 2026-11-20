@@ -1,5 +1,6 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.*
@@ -18,6 +19,6 @@ internal fun ShoppingFinishDialog(completedCount: Int, remainingCount: Int, onCa
                 Text(stringResource(Res.string.shopping_history_notice), style = MaterialTheme.typography.bodySmall)
             }
         },
-        dismissButton = { TextButton(onClick = onCancel) { Text(stringResource(Res.string.shopping_cancel)) } },
-        confirmButton = { TextButton(onClick = onConfirm, enabled = completedCount > 0) { Text(stringResource(Res.string.shopping_finish)) } })
+        dismissButton = { WoorisseumTextButton(onClick = onCancel) { Text(stringResource(Res.string.shopping_cancel)) } },
+        confirmButton = { WoorisseumTextButton(onClick = onConfirm, enabled = completedCount > 0) { Text(stringResource(Res.string.shopping_finish)) } })
 }

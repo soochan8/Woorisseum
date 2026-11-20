@@ -1,5 +1,7 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.feature.transaction.model.*
 import com.woorisseum.feature.transaction.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -32,24 +36,22 @@ fun ExpenseEditScreen(
             TopAppBar(
                 title = { Text(stringResource(Res.string.expense_edit_title)) },
                 navigationIcon = {
-                    TextButton(onClick = { onIntent(ExpenseEditUiIntent.Cancel) }) {
+                    WoorisseumTextButton(onClick = { onIntent(ExpenseEditUiIntent.Cancel) }) {
                         Text(stringResource(Res.string.expense_cancel))
                     }
                 },
             )
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Button(
+            WoorisseumBottomActionBar {
+                WoorisseumPrimaryButton(
                     enabled = state.form != null && state.hasChanges,
                     onClick = {
                         focusManager.clearFocus()
                         keyboard?.hide()
                         onIntent(ExpenseEditUiIntent.Submit)
                     },
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.expense_edit_submit)) }
             }
         },
@@ -59,7 +61,7 @@ fun ExpenseEditScreen(
             ExpenseLookupUnavailable(Modifier.fillMaxSize().padding(padding))
         } else {
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 ExpenseForm(form, { onIntent(ExpenseEditUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards)
                 Text(stringResource(if (state.showStorageUnavailable)

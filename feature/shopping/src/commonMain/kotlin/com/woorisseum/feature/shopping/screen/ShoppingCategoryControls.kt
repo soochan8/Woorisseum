@@ -7,6 +7,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.woorisseum.core.designsystem.component.WoorisseumSecondaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumFilterChip
 import com.woorisseum.core.domain.shopping.ShoppingCategory
 import com.woorisseum.feature.shopping.model.ShoppingCategoryFilter
 import com.woorisseum.feature.shopping.resources.*
@@ -17,7 +19,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun ShoppingCategorySelector(value: ShoppingCategory?, onSelect: (ShoppingCategory?) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        OutlinedButton(onClick = { expanded = true }) {
+        WoorisseumSecondaryButton(onClick = { expanded = true }) {
             Text(stringResource(Res.string.shopping_category_selection, shoppingCategoryLabel(value)))
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -34,13 +36,13 @@ internal fun ShoppingCategorySelector(value: ShoppingCategory?, onSelect: (Shopp
 @Composable
 internal fun ShoppingCategoryFilters(selected: ShoppingCategoryFilter, onSelect: (ShoppingCategoryFilter) -> Unit) {
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = selected == ShoppingCategoryFilter.All,
+        WoorisseumFilterChip(selected = selected == ShoppingCategoryFilter.All,
             onClick = { onSelect(ShoppingCategoryFilter.All) }, label = { Text(stringResource(Res.string.shopping_category_all)) })
-        FilterChip(selected = selected == ShoppingCategoryFilter.Uncategorized,
+        WoorisseumFilterChip(selected = selected == ShoppingCategoryFilter.Uncategorized,
             onClick = { onSelect(ShoppingCategoryFilter.Uncategorized) }, label = { Text(shoppingCategoryLabel(null)) })
         ShoppingCategory.entries.forEach { category ->
             val filter = ShoppingCategoryFilter.Category(category)
-            FilterChip(selected = selected == filter, onClick = { onSelect(filter) }, label = { Text(shoppingCategoryLabel(category)) })
+            WoorisseumFilterChip(selected = selected == filter, onClick = { onSelect(filter) }, label = { Text(shoppingCategoryLabel(category)) })
         }
     }
 }

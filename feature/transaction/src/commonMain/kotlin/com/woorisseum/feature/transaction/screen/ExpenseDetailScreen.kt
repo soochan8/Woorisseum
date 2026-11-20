@@ -1,5 +1,7 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
 import com.woorisseum.feature.transaction.model.*
 import com.woorisseum.feature.transaction.resources.*
@@ -33,18 +37,16 @@ fun ExpenseDetailScreen(
             TopAppBar(
                 title = { Text(stringResource(Res.string.expense_detail_title)) },
                 navigationIcon = {
-                    TextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
+                    WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
                 },
             )
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Button(
+            WoorisseumBottomActionBar {
+                WoorisseumPrimaryButton(
                     onClick = { onIntent(ExpenseDetailUiIntent.Edit) },
                     enabled = state.detail != null,
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.expense_edit_action)) }
             }
         },
@@ -55,7 +57,7 @@ fun ExpenseDetailScreen(
         } else {
             Column(
                 Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                    .padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 Text(stringResource(Res.string.expense_amount_won, detail.amountText),

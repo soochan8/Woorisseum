@@ -1,5 +1,8 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumSecondaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -37,24 +40,24 @@ fun ShoppingItemEditorSheet(
             if (editingUsers.isNotEmpty()) Text(
                 stringResource(Res.string.shopping_editing, editingUsers.joinToString(", ") { it.displayName }),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-            OutlinedTextField(value = state.nameInput, onValueChange = { onIntent(ShoppingListUiIntent.EditName(it)) },
+            WoorisseumTextField(value = state.nameInput, onValueChange = { onIntent(ShoppingListUiIntent.EditName(it)) },
                 label = { Text(stringResource(Res.string.shopping_quick_name)) }, modifier = Modifier.fillMaxWidth(),
                 singleLine = true, isError = state.nameError != null,
                 supportingText = state.nameError?.let { error -> { Text(shoppingNameErrorText(error)) } })
             Text(stringResource(Res.string.shopping_category_optional), style = MaterialTheme.typography.labelLarge)
             ShoppingCategorySelector(state.category) { onIntent(ShoppingListUiIntent.EditCategory(it)) }
-            OutlinedTextField(value = state.quantityInput, onValueChange = { onIntent(ShoppingListUiIntent.EditQuantity(it)) },
+            WoorisseumTextField(value = state.quantityInput, onValueChange = { onIntent(ShoppingListUiIntent.EditQuantity(it)) },
                 label = { Text(stringResource(Res.string.shopping_quantity)) }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 supportingText = { Text(stringResource(Res.string.shopping_quantity_hint)) })
-            OutlinedTextField(value = state.memoInput, onValueChange = { onIntent(ShoppingListUiIntent.EditMemo(it)) },
+            WoorisseumTextField(value = state.memoInput, onValueChange = { onIntent(ShoppingListUiIntent.EditMemo(it)) },
                 label = { Text(stringResource(Res.string.shopping_memo)) }, modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 5)
             Text(stringResource(Res.string.shopping_temporary_notice), style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = { onIntent(ShoppingListUiIntent.CancelEdit) }, modifier = Modifier.weight(1f)) {
+                WoorisseumSecondaryButton(onClick = { onIntent(ShoppingListUiIntent.CancelEdit) }, modifier = Modifier.weight(1f)) {
                     Text(stringResource(Res.string.shopping_cancel))
                 }
-                Button(onClick = {
+                WoorisseumPrimaryButton(onClick = {
                     focus.clearFocus(); keyboard?.hide()
                     onIntent(ShoppingListUiIntent.SubmitEdit)
                 }, enabled = state.hasChanges, modifier = Modifier.weight(1f)) {

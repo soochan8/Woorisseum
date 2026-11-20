@@ -1,5 +1,9 @@
 package com.woorisseum.feature.transaction.screen
 
+import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +31,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -102,7 +103,7 @@ fun ExpenseListScreen(
             item(key = "filters", contentType = "filters") { ExpenseListFilterBar(state, onIntent) }
             if (state.isSearchOpen && state.isExpenseSourceReady) item(key = "search-count") {
                 Text(stringResource(Res.string.expense_search_result_count, state.dayGroups.sumOf { it.expenses.size }),
-                    Modifier.padding(horizontal = 24.dp, vertical = 12.dp), style = MaterialTheme.typography.labelLarge)
+                    Modifier.padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 12.dp), style = MaterialTheme.typography.labelLarge)
             }
             if (state.dayGroups.isEmpty()) {
                 item(key = "empty", contentType = "empty") {
@@ -130,7 +131,7 @@ fun ExpenseListScreen(
                     }
                 }
                 items(group.expenses, key = { "expense:${it.id}" }, contentType = { "expense-row" }) { expense ->
-                    Box(Modifier.padding(horizontal = 24.dp)) {
+                    Box(Modifier.padding(horizontal = WoorisseumSpacing.screenHorizontal)) {
                         ExpenseRow(expense) { onIntent(ExpenseListUiIntent.OpenExpense(expense.id)) }
                     }
                 }
@@ -148,7 +149,7 @@ private fun SearchEmptyContent(unavailable: Boolean, onClear: () -> Unit, modifi
         Text(stringResource(if (unavailable) Res.string.expense_search_unavailable_description else Res.string.expense_search_empty_description),
             Modifier.padding(top = 6.dp), color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
-        TextButton(onClick = onClear) { Text(stringResource(Res.string.expense_search_clear)) }
+        WoorisseumTextButton(onClick = onClear) { Text(stringResource(Res.string.expense_search_clear)) }
     }
 }
 
@@ -158,7 +159,7 @@ private fun ExpenseHeader(
     onIntent: (ExpenseListUiIntent) -> Unit,
     onToggleSearch: () -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = WoorisseumSpacing.screenHorizontal)) {
         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(if (state.isSearchOpen) Res.string.expense_search_open else Res.string.expense_list_title), Modifier.weight(1f),
                 style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
@@ -247,7 +248,7 @@ private fun ExpenseCategoryTabs(
 ) {
     Column {
         Row(
-            modifier = Modifier.fillMaxWidth().selectableGroup().padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxWidth().selectableGroup().padding(horizontal = WoorisseumSpacing.screenHorizontal),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             (listOf(null) + ExpenseCategory.entries).forEach { category ->
@@ -344,14 +345,12 @@ private fun ExpenseEmptyContent(isFiltered: Boolean, modifier: Modifier = Modifi
 
 @Composable
 private fun ExpenseAddBar(onClick: () -> Unit) {
-    Surface(color = MaterialTheme.colorScheme.background) {
-        Column(Modifier.windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Button(
+    Column {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        WoorisseumBottomActionBar(contentPadding = PaddingValues(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 16.dp)) {
+            WoorisseumPrimaryButton(
                 onClick = onClick,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)
-                    .heightIn(min = 52.dp),
-                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
             ) {
                 Icon(painter = painterResource(Res.drawable.ic_plus), contentDescription = null)
                 Spacer(Modifier.width(8.dp))

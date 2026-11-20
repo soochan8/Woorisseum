@@ -2,12 +2,12 @@ package com.woorisseum.feature.transaction.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
 import com.woorisseum.feature.transaction.model.ExpenseAmountInputError
 import com.woorisseum.feature.transaction.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -15,7 +15,7 @@ import org.jetbrains.compose.resources.stringResource
 /** 실제 지출·고정지출 계획이 공유하는 금액 입력 UI다. 검증 결과는 부모가 전달한다. */
 @Composable
 internal fun ExpenseAmountInput(value: String, error: ExpenseAmountInputError?, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
-    OutlinedTextField(
+    WoorisseumTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
@@ -32,7 +32,7 @@ internal fun ExpenseAmountInput(value: String, error: ExpenseAmountInputError?, 
 
 @Composable
 internal fun ExpenseMemoInput(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
-    OutlinedTextField(
+    WoorisseumTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),

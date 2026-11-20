@@ -1,5 +1,6 @@
 package com.woorisseum.feature.transaction.card
 
+import com.woorisseum.core.designsystem.component.WoorisseumTextButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.woorisseum.core.designsystem.component.WoorisseumTextField
+import com.woorisseum.core.designsystem.component.WoorisseumBottomActionBar
+import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.feature.transaction.resources.*
 import com.woorisseum.core.designsystem.component.SwipeToRevealDeleteRow
 import org.jetbrains.compose.resources.stringResource
@@ -126,7 +130,7 @@ private fun CardTextField(
     required: Boolean, enabled: Boolean, imeAction: ImeAction,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedTextField(value, onValueChange, modifier = modifier.fillMaxWidth(),
+    WoorisseumTextField(value, onValueChange, modifier = modifier.fillMaxWidth(),
         label = { Text(label) }, placeholder = { Text(example) }, singleLine = true,
         enabled = enabled, isError = required, keyboardOptions = KeyboardOptions(imeAction = imeAction),
         supportingText = if (required) { { Text(stringResource(Res.string.card_field_required)) } } else null)
@@ -144,14 +148,12 @@ private fun CardScaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(title = { Text(title) }, navigationIcon = {
-                TextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
+                WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
             })
         }, bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Button(onClick = onAction, enabled = enabled,
-                    modifier = Modifier.fillMaxWidth()
-                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
-                        .padding(horizontal = 24.dp, vertical = 12.dp).heightIn(min = 48.dp)) { Text(action) }
+            WoorisseumBottomActionBar {
+                WoorisseumPrimaryButton(onClick = onAction, enabled = enabled,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(action) }
             }
         }, content = content)
 }
