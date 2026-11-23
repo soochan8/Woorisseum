@@ -53,4 +53,20 @@
     <string name="shopping_history_empty">아직 마친 장보기가 없어요</string>
     <string name="shopping_history_date">%1$d년 %2$d월 %3$d일 장보기 · %4$s:%5$s</string>
     <string name="shopping_history_item_count">구매한 물건 %1$d개</string>
+    <string name="shopping_categories_title">장보기 카테고리</string>
+    <string name="shopping_categories_notice">분류 변경은 현재 장보기 목록에 적용돼요. 저장·공유 연결 전에는 앱을 다시 시작하면 초기화돼요.</string>
+    <string name="shopping_categories_empty">아직 카테고리가 없어요. 미분류로도 물품을 추가할 수 있어요.</string>
+    <string name="shopping_category_add">카테고리 추가</string>
+    <string name="shopping_category_edit">카테고리 이름 수정</string>
+    <string name="shopping_category_name">카테고리 이름</string>
+    <string name="shopping_category_save">저장</string>
+    <string name="shopping_category_usage">현재 물품 %1$d개</string>
+    <string name="shopping_category_delete_action">%1$s 카테고리 삭제</string>
+    <string name="shopping_category_edit_action">%1$s 이름 수정</string>
+    <string name="shopping_category_delete_title">‘%1$s’을 삭제할까요?</string>
+    <string name="shopping_category_delete_used">현재 이 카테고리를 사용하는 물품이 %1$d개 있어요. 삭제하면 이 물품들은 미분류로 바뀌어요. 물품은 삭제되지 않으며 완료 기록의 당시 분류명은 유지돼요.</string>
+    <string name="shopping_category_delete_unused">현재 이 카테고리를 사용하는 물품은 없어요. 완료 기록의 당시 분류명은 유지돼요.</string>
+    <string name="shopping_category_name_required">카테고리 이름을 입력해 주세요.</string>
+    <string name="shopping_category_name_duplicate">같은 이름의 카테고리가 있어요.</string>
+    <string name="shopping_category_name_reserved">전체·미분류는 화면에서 사용하는 이름이에요. 다른 이름을 입력해 주세요.</string>
 </resources>

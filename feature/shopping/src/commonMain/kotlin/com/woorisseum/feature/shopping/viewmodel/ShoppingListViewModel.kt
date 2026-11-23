@@ -25,16 +25,35 @@ class ShoppingListViewModel(
 
     fun onIntent(intent: ShoppingListUiIntent) {
         // update의 재시도 안에서 ID 생성 같은 부수효과를 수행하지 않는다.
-        val newId = if (intent == ShoppingListUiIntent.AddItem || intent == ShoppingListUiIntent.ConfirmFinish) createId() else null
+        val newId = if (intent == ShoppingListUiIntent.AddItem || intent == ShoppingListUiIntent.ConfirmFinish || intent == ShoppingListUiIntent.SubmitCategory) createId() else null
         val completedAt = if (intent == ShoppingListUiIntent.ConfirmFinish) now() else null
         _uiState.update { state ->
             when (intent) {
+                is ShoppingListUiIntent.InitializeCategories -> if (state.categoriesInitialized) state else {
+                    require(intent.categories.map { it.category }.distinct().size == intent.categories.size)
+                    state.copy(categories = intent.categories.toList(), categoriesInitialized = true,
+                        reservedCategoryNames = intent.reservedNames.toSet())
+                }
+                is ShoppingListUiIntent.OpenCategoryEditor -> {
+                    val category = intent.category?.let { id -> state.categories.find { it.category == id } }
+                    if (!state.categoriesInitialized || (intent.category != null && category == null)) state
+                    else state.copy(categoryEditor = ShoppingCategoryEditorUiState(category), categoryToDelete = null)
+                }
+                is ShoppingListUiIntent.CategoryNameChanged -> state.copy(categoryEditor = state.categoryEditor?.copy(nameInput = intent.value, error = null))
+                ShoppingListUiIntent.SubmitCategory -> state.saveCategory(checkNotNull(newId))
+                ShoppingListUiIntent.CancelCategoryEdit -> state.copy(categoryEditor = null)
+                is ShoppingListUiIntent.RequestDeleteCategory -> if (state.categories.none { it.category == intent.category }) state else
+                    state.copy(categoryToDelete = intent.category, categoryEditor = null)
+                ShoppingListUiIntent.CancelDeleteCategory -> state.copy(categoryToDelete = null)
+                ShoppingListUiIntent.ConfirmDeleteCategory -> state.deleteCategory()
+                ShoppingListUiIntent.CloseCategoryManagement -> state.copy(categoryEditor = null, categoryToDelete = null)
                 ShoppingListUiIntent.RequestFinish -> if (state.totalPurchasedCount == 0 || state.editor != null) state else
                     state.copy(finishItemIds = state.items.filter { it.purchased }.map { it.id }.toSet())
                 ShoppingListUiIntent.CancelFinish -> state.copy(finishItemIds = null)
                 ShoppingListUiIntent.ConfirmFinish -> {
                     val ids = state.finishItemIds
-                    val completion = ids?.let { completeShopping(state.items, it, checkNotNull(newId), checkNotNull(completedAt)) }
+                    val completion = ids?.let { completeShopping(state.items, it, checkNotNull(newId), checkNotNull(completedAt),
+                        state.categories.associate { category -> category.category to category.name }) }
                     if (completion == null) state.copy(finishItemIds = null) else {
                         check(state.trips.none { it.id == completion.trip.id }) { "Duplicate shopping trip identifier" }
                         state.copy(items = completion.remainingItems, trips = listOf(completion.trip) + state.trips,
@@ -45,9 +64,9 @@ class ShoppingListViewModel(
                 }
                 is ShoppingListUiIntent.QuickNameChanged -> state.copy(quickNameInput = intent.value,
                     quickNameError = null, duplicateItemId = null)
-                is ShoppingListUiIntent.QuickCategoryChanged -> state.copy(quickCategory = intent.category)
-                is ShoppingListUiIntent.CategoryFilterChanged -> state.copy(categoryFilter = intent.filter)
-                is ShoppingListUiIntent.EditCategory -> state.copy(editor = state.editor?.copy(category = intent.category))
+                is ShoppingListUiIntent.QuickCategoryChanged -> if (state.acceptsCategory(intent.category)) state.copy(quickCategory = intent.category) else state
+                is ShoppingListUiIntent.CategoryFilterChanged -> if (intent.filter !is ShoppingCategoryFilter.Category || state.acceptsCategory(intent.filter.value)) state.copy(categoryFilter = intent.filter) else state
+                is ShoppingListUiIntent.EditCategory -> if (state.acceptsCategory(intent.category)) state.copy(editor = state.editor?.copy(category = intent.category)) else state
                 ShoppingListUiIntent.AddItem -> {
                     val name = state.quickNameInput.trim()
                     val duplicate = findDuplicateShoppingItem(state.items, name)

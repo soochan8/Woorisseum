@@ -3,7 +3,12 @@ package com.woorisseum.core.domain.shopping
 import kotlin.time.Instant
 
 /** 장보기를 마친 시점의 구매 항목이다. 현재 목록의 후속 변경과 독립적인 기록이다. */
-data class ShoppingTrip(val id: String, val completedAt: Instant, val items: List<ShoppingItem>) {
+data class ShoppingTrip(
+    val id: String,
+    val completedAt: Instant,
+    val items: List<ShoppingItem>,
+    val categoryNames: Map<ShoppingCategory, String> = emptyMap(),
+) {
     init {
         require(id.isNotBlank())
         require(items.isNotEmpty() && items.all { it.purchased })
@@ -19,8 +24,10 @@ fun completeShopping(
     confirmedIds: Set<String>,
     tripId: String,
     completedAt: Instant,
+    categoryNames: Map<ShoppingCategory, String> = emptyMap(),
 ): ShoppingCompletion? {
     val (completed, remaining) = items.partition { it.purchased && it.id in confirmedIds }
     if (completed.isEmpty()) return null
-    return ShoppingCompletion(ShoppingTrip(tripId, completedAt, completed), remaining)
+    return ShoppingCompletion(ShoppingTrip(tripId, completedAt, completed,
+        categoryNames.filterKeys { category -> completed.any { it.category == category } }), remaining)
 }

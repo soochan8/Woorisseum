@@ -1,5 +1,6 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.domain.shopping.ShoppingCategoryDefinition
 import com.woorisseum.core.designsystem.component.WoorisseumTopAppBar
 import com.woorisseum.core.designsystem.theme.WoorisseumSpacing
 import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
@@ -89,7 +90,7 @@ fun ShoppingListScreen(
         bottomBar = {
             WoorisseumBottomActionBar {
                 Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    ShoppingCategorySelector(state.quickCategory, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.QuickCategoryChanged(it)) }
+                    ShoppingCategorySelector(state.quickCategory, categories = state.categories, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.QuickCategoryChanged(it)) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         WoorisseumTextField(
                             value = state.quickNameInput,
@@ -133,7 +134,7 @@ fun ShoppingListScreen(
                 }
             }
             item(key = "category-filter") {
-                ShoppingCategoryFilters(state.categoryFilter) {
+                ShoppingCategoryFilters(state.categoryFilter, state.categories) {
                     revealedItemId = null
                     hideKeyboard()
                     onIntent(ShoppingListUiIntent.CategoryFilterChanged(it))
@@ -157,7 +158,7 @@ fun ShoppingListScreen(
                 }
             }
             items(pending, key = { it.id }) { item -> ShoppingItemRow(item, state.presence, onIntent,
-                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard) }
+                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard, categories = state.categories) }
             item(key = "purchased-header") {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 WoorisseumTextButton(onClick = { revealedItemId = null; onIntent(ShoppingListUiIntent.TogglePurchasedSection) }, enabled = purchased.isNotEmpty()) {
@@ -168,7 +169,7 @@ fun ShoppingListScreen(
             }
             if (state.purchasedExpanded) {
                 items(purchased, key = { it.id }) { item -> ShoppingItemRow(item, state.presence, onIntent,
-                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard) }
+                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard, categories = state.categories) }
             }
         }
     }
@@ -177,7 +178,7 @@ fun ShoppingListScreen(
 @Composable
 private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiState,
     onIntent: (ShoppingListUiIntent) -> Unit, revealed: Boolean, onReveal: (String?) -> Unit,
-    onBeforeAction: () -> Unit) {
+    onBeforeAction: () -> Unit, categories: List<ShoppingCategoryDefinition>) {
     val live = presence as? ShoppingPresenceUiState.Connected
     val editing = live?.editing?.get(item.id).orEmpty()
     val recent = live?.recentChanges?.get(item.id)
@@ -200,7 +201,7 @@ private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiStat
                         color = if (item.purchased) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
                     item.quantity?.let { Text(it, Modifier.widthIn(max = 120.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 }
-                item.category?.let { Text(shoppingCategoryLabel(it),
+                item.category?.let { Text(shoppingCategoryLabel(it, categories),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
                 item.memo?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
                 when {

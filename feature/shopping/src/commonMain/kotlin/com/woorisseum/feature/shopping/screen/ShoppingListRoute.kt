@@ -18,6 +18,7 @@ fun ShoppingListRoute(
     showBackButton: Boolean = true,
     viewModel: ShoppingListViewModel = koinViewModel(),
 ) {
+    InitializeShoppingCategories(viewModel::onIntent)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ShoppingListScreen(state, viewModel::onIntent, onBack, modifier, onOpenHistory = onOpenHistory, showBackButton = showBackButton)
     if (state.finishItemIds != null) {
@@ -27,7 +28,7 @@ fun ShoppingListRoute(
     }
     state.editor?.let { editor ->
         state.currentEditedItem?.let { current ->
-            ShoppingItemEditorSheet(editor, viewModel::onIntent, purchased = current.purchased,
+            ShoppingItemEditorSheet(editor, viewModel::onIntent, purchased = current.purchased, categories = state.categories,
                 editingUsers = (state.presence as? ShoppingPresenceUiState.Connected)?.editing?.get(current.id).orEmpty())
         }
     }

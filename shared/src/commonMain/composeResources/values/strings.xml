@@ -7,4 +7,6 @@
     <string name="management_cards_description">지출에 사용하는 카드 등록·수정·삭제</string>
     <string name="management_fixed">고정지출 관리</string>
     <string name="management_fixed_description">월세·통신비·구독료 등 반복 지출 계획</string>
+    <string name="management_shopping_categories">장보기 카테고리</string>
+    <string name="management_shopping_categories_description">분류 추가·이름 수정·삭제</string>
 </resources>

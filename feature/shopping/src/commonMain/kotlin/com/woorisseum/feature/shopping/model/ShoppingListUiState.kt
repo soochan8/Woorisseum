@@ -3,10 +3,17 @@ package com.woorisseum.feature.shopping.model
 import com.woorisseum.core.domain.shopping.ShoppingTrip
 import com.woorisseum.core.domain.shopping.ShoppingItem
 import com.woorisseum.core.domain.shopping.ShoppingCategory
+import com.woorisseum.core.domain.shopping.ShoppingCategoryDefinition
+import com.woorisseum.core.domain.shopping.ShoppingCategoryNameError
 
 /** 화면에서만 사용하는 임시 목록이다. 저장·공유된 목록으로 표시하지 않는다. */
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
+    val categories: List<ShoppingCategoryDefinition> = emptyList(),
+    val categoriesInitialized: Boolean = false,
+    val reservedCategoryNames: Set<String> = emptySet(),
+    val categoryEditor: ShoppingCategoryEditorUiState? = null,
+    val categoryToDelete: ShoppingCategory? = null,
     val trips: List<ShoppingTrip> = emptyList(),
     val finishItemIds: Set<String>? = null,
     val quickNameInput: String = "",
@@ -18,6 +25,7 @@ data class ShoppingListUiState(
     val editor: ShoppingItemEditorUiState? = null,
     val presence: ShoppingPresenceUiState = ShoppingPresenceUiState.NotConnected,
 ) {
+    val categoryUsage: Map<ShoppingCategory?, Int> get() = items.groupingBy { it.category }.eachCount()
     val totalPurchasedCount: Int get() = items.count { it.purchased }
     val itemsToFinish: List<ShoppingItem> get() = items.filter { it.purchased && it.id in finishItemIds.orEmpty() }
     // 화면 그룹을 위한 투영이다. 원본 목록을 따로 복제해 보관하지 않는다.
@@ -41,7 +49,24 @@ data class ShoppingItemEditorUiState(
 
 enum class ShoppingNameError { REQUIRED, DUPLICATE }
 
+data class ShoppingCategoryEditorUiState(
+    val original: ShoppingCategoryDefinition? = null,
+    val nameInput: String = original?.name.orEmpty(),
+    val error: ShoppingCategoryNameError? = null,
+) {
+    val hasChanges: Boolean get() = original == null || nameInput.trim() != original.name
+}
+
 sealed interface ShoppingListUiIntent {
+    data class InitializeCategories(val categories: List<ShoppingCategoryDefinition>, val reservedNames: Set<String>) : ShoppingListUiIntent
+    data class OpenCategoryEditor(val category: ShoppingCategory? = null) : ShoppingListUiIntent
+    data class CategoryNameChanged(val value: String) : ShoppingListUiIntent
+    data object SubmitCategory : ShoppingListUiIntent
+    data object CancelCategoryEdit : ShoppingListUiIntent
+    data class RequestDeleteCategory(val category: ShoppingCategory) : ShoppingListUiIntent
+    data object CancelDeleteCategory : ShoppingListUiIntent
+    data object ConfirmDeleteCategory : ShoppingListUiIntent
+    data object CloseCategoryManagement : ShoppingListUiIntent
     data object RequestFinish : ShoppingListUiIntent
     data object CancelFinish : ShoppingListUiIntent
     data object ConfirmFinish : ShoppingListUiIntent

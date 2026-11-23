@@ -15,7 +15,7 @@ import org.jetbrains.compose.resources.stringResource
 /** 업무 상태를 소유하지 않는 앱 메뉴다. 기능 화면은 shared의 이동 콜백으로 연다. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ManagementScreen(onOpenCards: () -> Unit, onOpenFixedExpenses: () -> Unit, modifier: Modifier = Modifier) {
+internal fun ManagementScreen(onOpenCards: () -> Unit, onOpenFixedExpenses: () -> Unit, onOpenShoppingCategories: () -> Unit, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { WoorisseumTopAppBar(title = { Text(stringResource(Res.string.nav_management), style = MaterialTheme.typography.headlineSmall) }) },
@@ -26,6 +26,13 @@ internal fun ManagementScreen(onOpenCards: () -> Unit, onOpenFixedExpenses: () -
                     supportingContent = { Text(stringResource(Res.string.management_cards_description)) },
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
                     modifier = Modifier.clickable(role = Role.Button, onClick = onOpenCards))
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            }
+            item(key = "shopping-categories") {
+                ListItem(headlineContent = { Text(stringResource(Res.string.management_shopping_categories)) },
+                    supportingContent = { Text(stringResource(Res.string.management_shopping_categories_description)) },
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onOpenShoppingCategories))
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             }
             item(key = "fixed-expenses") {

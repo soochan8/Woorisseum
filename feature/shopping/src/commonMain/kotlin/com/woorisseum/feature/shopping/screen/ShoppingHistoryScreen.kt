@@ -59,7 +59,7 @@ fun ShoppingHistoryScreen(trips: List<ShoppingTrip>, onBack: () -> Unit, modifie
                             Text(item.name, Modifier.weight(1f))
                             item.quantity?.let { Text(it, Modifier.widthIn(max = 120.dp)) }
                         }
-                        Text(shoppingCategoryLabel(item.category), style = MaterialTheme.typography.labelSmall,
+                        Text(item.category?.let { trip.categoryNames[it] } ?: shoppingCategoryLabel(item.category), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         item.memo?.let { Text(it, style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant) }

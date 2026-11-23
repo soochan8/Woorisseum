@@ -21,6 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import androidx.navigation.toRoute
 import com.woorisseum.feature.budget.screen.MonthlyBudgetRoute
+import com.woorisseum.feature.shopping.screen.ShoppingCategoryRoute
 import com.woorisseum.feature.shopping.screen.ShoppingHistoryRoute
 import com.woorisseum.feature.shopping.screen.ShoppingListRoute
 import com.woorisseum.feature.transaction.card.CardEditorRoute
@@ -48,6 +49,7 @@ import kotlin.time.Clock
 @Serializable private data object ShoppingListDestination
 @Serializable private data object MonthlyBudgetDestination
 @Serializable private data object ManagementDestination
+@Serializable private data object ShoppingCategoryDestination
 @Serializable private data object ShoppingHistoryDestination
 @Serializable private data object ExpenseEntryDestination
 @Serializable private data class ExpenseDetailDestination(val expenseId: String)
@@ -186,12 +188,17 @@ internal fun AppNavigation() {
             AppTabScaffold(AppTab.Management, navController::selectTab) { screenModifier ->
                 ManagementScreen(
                     modifier = screenModifier,
+                    onOpenShoppingCategories = { navController.navigate(ShoppingCategoryDestination) { launchSingleTop = true } },
                     onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } },
                     onOpenFixedExpenses = {
                         val month = currentMonth()
                         navController.navigate(FixedExpenseListDestination(month.year, month.month.number)) { launchSingleTop = true }
                     })
             }
+        }
+        composable<ShoppingCategoryDestination> { entry ->
+            val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }
+            ShoppingCategoryRoute(onBack = navigateBack, viewModelStoreOwner = sessionEntry)
         }
         composable<ShoppingHistoryDestination> { entry ->
             val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }

@@ -1,5 +1,6 @@
 package com.woorisseum.feature.shopping.screen
 
+import com.woorisseum.core.domain.shopping.ShoppingCategoryDefinition
 import com.woorisseum.core.designsystem.component.WoorisseumPrimaryButton
 import com.woorisseum.core.designsystem.component.WoorisseumSecondaryButton
 import com.woorisseum.core.designsystem.component.WoorisseumTextField
@@ -34,6 +35,7 @@ fun ShoppingItemEditorSheet(
     state: ShoppingItemEditorUiState,
     onIntent: (ShoppingListUiIntent) -> Unit,
     purchased: Boolean,
+    categories: List<ShoppingCategoryDefinition> = emptyList(),
     editingUsers: List<ShoppingCollaboratorUiModel> = emptyList(),
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
@@ -95,7 +97,7 @@ fun ShoppingItemEditorSheet(
                     keyboardActions = KeyboardActions(onDone = { hideKeyboard() }),
                     supportingText = state.nameError?.let { error -> { Text(shoppingNameErrorText(error)) } })
                 Text(stringResource(Res.string.shopping_category_optional), style = MaterialTheme.typography.labelLarge)
-                ShoppingCategorySelector(state.category, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.EditCategory(it)) }
+                ShoppingCategorySelector(state.category, categories = categories, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.EditCategory(it)) }
                 WoorisseumTextField(value = state.quantityInput, onValueChange = { onIntent(ShoppingListUiIntent.EditQuantity(it)) },
                     label = { Text(stringResource(Res.string.shopping_quantity)) }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
