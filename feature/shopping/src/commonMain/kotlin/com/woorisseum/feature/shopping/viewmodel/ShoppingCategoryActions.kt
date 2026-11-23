@@ -39,3 +39,14 @@ internal fun ShoppingListUiState.deleteCategory(): ShoppingListUiState {
         categoryToDelete = null,
     )
 }
+
+/** 인덱스 대신 ID를 받아 이름 변경이나 늦은 이벤트에도 다른 분류를 잘못 이동하지 않는다. */
+internal fun ShoppingListUiState.moveCategory(category: ShoppingCategory, before: ShoppingCategory?): ShoppingListUiState {
+    if (category == before || categoryEditor != null || categoryToDelete != null) return this
+    val moving = categories.find { it.category == category } ?: return this
+    if (before != null && categories.none { it.category == before }) return this
+    val reordered = categories.filterNot { it.category == category }.toMutableList()
+    val index = if (before == null) reordered.size else reordered.indexOfFirst { it.category == before }
+    reordered.add(index, moving)
+    return if (reordered == categories) this else copy(categories = reordered)
+}

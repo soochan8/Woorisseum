@@ -34,6 +34,7 @@ class ShoppingListViewModel(
                     state.copy(categories = intent.categories.toList(), categoriesInitialized = true,
                         reservedCategoryNames = intent.reservedNames.toSet())
                 }
+                is ShoppingListUiIntent.MoveCategory -> state.moveCategory(intent.category, intent.before)
                 is ShoppingListUiIntent.OpenCategoryEditor -> {
                     val category = intent.category?.let { id -> state.categories.find { it.category == id } }
                     if (!state.categoriesInitialized || (intent.category != null && category == null)) state

@@ -1,5 +1,10 @@
 package com.woorisseum.feature.shopping.screen
 
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,6 +14,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -20,6 +36,8 @@ import com.woorisseum.feature.shopping.model.*
 import com.woorisseum.feature.shopping.resources.*
 import com.woorisseum.feature.shopping.viewmodel.ShoppingListViewModel
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.painterResource
+import kotlinx.coroutines.isActive
 import org.koin.compose.viewmodel.koinViewModel
 
 /** 장보기와 같은 상태 소유자를 사용해 변경을 즉시 반영한다. 저장소·DB를 임의로 만들지 않는다. */
@@ -41,6 +59,30 @@ fun ShoppingCategoryScreen(
 ) {
     var revealedId by remember { mutableStateOf<String?>(null) }
     val usage = state.categoryUsage
+    val listState = rememberLazyListState()
+    val drag = rememberShoppingCategoryDragState(listState, state.categories) { category, before ->
+        onIntent(ShoppingListUiIntent.MoveCategory(category, before))
+    }
+    val edge = with(LocalDensity.current) { 48.dp.toPx() }
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(state.categories, state.categoryEditor, state.categoryToDelete) {
+        if (state.categoryEditor != null || state.categoryToDelete != null ||
+            state.categories.none { it.category == drag.dragging }) drag.stop()
+    }
+    LaunchedEffect(drag.dragging) {
+        if (drag.dragging != null) {
+            var previous = withFrameNanos { it }
+            while (isActive && drag.dragging != null) {
+                val frame = withFrameNanos { it }
+                val seconds = ((frame - previous) / 1_000_000_000f).coerceIn(0f, 0.05f)
+                previous = frame
+                val speed = drag.scrollSpeed(edge)
+                if (speed != 0f) listState.scrollBy(speed * seconds)
+                drag.moveIfNeeded()
+            }
+        }
+    }
     Scaffold(
         modifier = modifier.imePadding(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -54,7 +96,7 @@ fun ShoppingCategoryScreen(
             }
         } },
     ) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(24.dp),
+        LazyColumn(Modifier.fillMaxSize().padding(padding), state = listState, contentPadding = PaddingValues(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item(key = "notice") { Text(stringResource(Res.string.shopping_categories_notice),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -63,19 +105,64 @@ fun ShoppingCategoryScreen(
             }
             items(state.categories, key = { it.category.id }) { definition ->
                 val id = definition.category
-                SwipeToRevealDeleteRow(id.id, revealedId == id.id, { revealedId = it },
-                    stringResource(Res.string.shopping_category_delete_action, definition.name), stringResource(Res.string.shopping_delete),
-                    onDelete = { revealedId = null; onIntent(ShoppingListUiIntent.RequestDeleteCategory(id)) }) {
-                    Column(Modifier.fillMaxWidth().clickable(role = Role.Button,
-                        onClickLabel = stringResource(Res.string.shopping_category_edit_action, definition.name),
-                        onClick = { if (revealedId != null) revealedId = null else onIntent(ShoppingListUiIntent.OpenCategoryEditor(id)) })
-                        .padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(definition.name, style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(Res.string.shopping_category_usage, usage[id] ?: 0),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val dragging = drag.dragging == id
+                val index = state.categories.indexOfFirst { it.category == id }
+                val upLabel = stringResource(Res.string.shopping_category_move_up)
+                val downLabel = stringResource(Res.string.shopping_category_move_down)
+                val handleLabel = stringResource(Res.string.shopping_category_reorder, definition.name)
+                Column(Modifier.animateItem(placementSpec = if (dragging) null else tween(140))
+                    .zIndex(if (dragging) 1f else 0f)
+                    .graphicsLayer { translationY = if (dragging) drag.translation else 0f }
+                    .background(MaterialTheme.colorScheme.background)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.weight(1f)) {
+                            SwipeToRevealDeleteRow(id.id, revealedId == id.id, { revealedId = it },
+                                stringResource(Res.string.shopping_category_delete_action, definition.name), stringResource(Res.string.shopping_delete),
+                                enabled = drag.dragging == null,
+                                onDelete = { revealedId = null; onIntent(ShoppingListUiIntent.RequestDeleteCategory(id)) }) {
+                                Column(Modifier.fillMaxWidth().clickable(enabled = drag.dragging == null, role = Role.Button,
+                                    onClickLabel = stringResource(Res.string.shopping_category_edit_action, definition.name),
+                                    onClick = { if (revealedId != null) revealedId = null else onIntent(ShoppingListUiIntent.OpenCategoryEditor(id)) })
+                                    .padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(definition.name, style = MaterialTheme.typography.bodyLarge)
+                                    Text(stringResource(Res.string.shopping_category_usage, usage[id] ?: 0),
+                                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                        Box(Modifier.size(48.dp).semantics {
+                            contentDescription = handleLabel
+                            customActions = buildList {
+                                if (index > 0) add(CustomAccessibilityAction(upLabel) {
+                                    revealedId = null
+                                    onIntent(ShoppingListUiIntent.MoveCategory(id, state.categories[index - 1].category)); true
+                                })
+                                if (index < state.categories.lastIndex) add(CustomAccessibilityAction(downLabel) {
+                                    revealedId = null
+                                    onIntent(ShoppingListUiIntent.MoveCategory(id, state.categories.getOrNull(index + 2)?.category)); true
+                                })
+                            }
+                        }.pointerInput(id, state.categories.size > 1) {
+                            if (state.categories.size > 1) detectDragGestures(
+                                onDragStart = {
+                                    revealedId = null
+                                    focus.clearFocus(); keyboard?.hide()
+                                    drag.start(id)
+                                },
+                                onDragEnd = { if (drag.dragging == id) drag.stop() },
+                                onDragCancel = { if (drag.dragging == id) drag.stop() },
+                                onDrag = { change, amount ->
+                                    change.consume()
+                                    if (drag.dragging == id) drag.dragBy(amount.y)
+                                },
+                            )
+                        }, contentAlignment = Alignment.Center) {
+                            Icon(painterResource(Res.drawable.shopping_reorder), contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             }
         }
     }

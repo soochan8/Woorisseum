@@ -69,4 +69,7 @@
     <string name="shopping_category_name_required">카테고리 이름을 입력해 주세요.</string>
     <string name="shopping_category_name_duplicate">같은 이름의 카테고리가 있어요.</string>
     <string name="shopping_category_name_reserved">전체·미분류는 화면에서 사용하는 이름이에요. 다른 이름을 입력해 주세요.</string>
+    <string name="shopping_category_reorder">%1$s 순서 변경. 손잡이를 위아래로 끌어 이동하세요.</string>
+    <string name="shopping_category_move_up">위로 이동</string>
+    <string name="shopping_category_move_down">아래로 이동</string>
 </resources>

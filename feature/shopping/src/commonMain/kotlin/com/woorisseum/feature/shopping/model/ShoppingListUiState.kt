@@ -59,6 +59,7 @@ data class ShoppingCategoryEditorUiState(
 
 sealed interface ShoppingListUiIntent {
     data class InitializeCategories(val categories: List<ShoppingCategoryDefinition>, val reservedNames: Set<String>) : ShoppingListUiIntent
+    data class MoveCategory(val category: ShoppingCategory, val before: ShoppingCategory?) : ShoppingListUiIntent
     data class OpenCategoryEditor(val category: ShoppingCategory? = null) : ShoppingListUiIntent
     data class CategoryNameChanged(val value: String) : ShoppingListUiIntent
     data object SubmitCategory : ShoppingListUiIntent
