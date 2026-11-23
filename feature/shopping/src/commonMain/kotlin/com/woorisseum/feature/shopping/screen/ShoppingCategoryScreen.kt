@@ -91,7 +91,7 @@ fun ShoppingCategoryScreen(
             navigationIcon = { WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.shopping_back)) } }) },
         bottomBar = { WoorisseumBottomActionBar {
             WoorisseumPrimaryButton(onClick = { revealedId = null; onIntent(ShoppingListUiIntent.OpenCategoryEditor()) },
-                enabled = state.categoriesInitialized, modifier = Modifier.fillMaxWidth()) {
+                enabled = state.canWrite, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(Res.string.shopping_category_add))
             }
         } },
@@ -100,7 +100,8 @@ fun ShoppingCategoryScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item(key = "notice") { Text(stringResource(Res.string.shopping_categories_notice),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            if (state.categoriesInitialized && state.categories.isEmpty()) item(key = "empty") {
+            item(key = "storage") { ShoppingStorageStatus(state, onIntent) }
+            if (state.categoriesInitialized && !state.isLoading && state.loadError == null && state.categories.isEmpty()) item(key = "empty") {
                 Text(stringResource(Res.string.shopping_categories_empty))
             }
             items(state.categories, key = { it.category.id }) { definition ->
@@ -118,9 +119,9 @@ fun ShoppingCategoryScreen(
                         Box(Modifier.weight(1f)) {
                             SwipeToRevealDeleteRow(id.id, revealedId == id.id, { revealedId = it },
                                 stringResource(Res.string.shopping_category_delete_action, definition.name), stringResource(Res.string.shopping_delete),
-                                enabled = drag.dragging == null,
+                                enabled = drag.dragging == null && state.canWrite,
                                 onDelete = { revealedId = null; onIntent(ShoppingListUiIntent.RequestDeleteCategory(id)) }) {
-                                Column(Modifier.fillMaxWidth().clickable(enabled = drag.dragging == null, role = Role.Button,
+                                Column(Modifier.fillMaxWidth().clickable(enabled = drag.dragging == null && state.canWrite, role = Role.Button,
                                     onClickLabel = stringResource(Res.string.shopping_category_edit_action, definition.name),
                                     onClick = { if (revealedId != null) revealedId = null else onIntent(ShoppingListUiIntent.OpenCategoryEditor(id)) })
                                     .padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -171,9 +172,10 @@ fun ShoppingCategoryScreen(
             onDismissRequest = { onIntent(ShoppingListUiIntent.CancelCategoryEdit) },
             modifier = Modifier.imePadding(),
             title = { Text(stringResource(if (draft.original == null) Res.string.shopping_category_add else Res.string.shopping_category_edit)) },
-            text = {
+            text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.operationError?.let { ShoppingOperationError(it) }
                 WoorisseumTextField(draft.nameInput, { onIntent(ShoppingListUiIntent.CategoryNameChanged(it)) },
-                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                    modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !state.isSaving,
                     label = { Text(stringResource(Res.string.shopping_category_name)) }, isError = draft.error != null,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { onIntent(ShoppingListUiIntent.SubmitCategory) }),
@@ -182,8 +184,8 @@ fun ShoppingCategoryScreen(
                         ShoppingCategoryNameError.DUPLICATE -> Res.string.shopping_category_name_duplicate
                         ShoppingCategoryNameError.RESERVED -> Res.string.shopping_category_name_reserved
                     })) } })
-            },
-            confirmButton = { WoorisseumTextButton(onClick = { onIntent(ShoppingListUiIntent.SubmitCategory) }, enabled = draft.hasChanges) {
+            } },
+            confirmButton = { WoorisseumTextButton(onClick = { onIntent(ShoppingListUiIntent.SubmitCategory) }, enabled = draft.hasChanges && state.canWrite) {
                 Text(stringResource(Res.string.shopping_category_save))
             } },
             dismissButton = { WoorisseumTextButton(onClick = { onIntent(ShoppingListUiIntent.CancelCategoryEdit) }) {
@@ -196,9 +198,11 @@ fun ShoppingCategoryScreen(
         AlertDialog(
             onDismissRequest = { onIntent(ShoppingListUiIntent.CancelDeleteCategory) },
             title = { Text(stringResource(Res.string.shopping_category_delete_title, definition.name)) },
-            text = { Text(if (count > 0) stringResource(Res.string.shopping_category_delete_used, count)
-                else stringResource(Res.string.shopping_category_delete_unused)) },
-            confirmButton = { WoorisseumTextButton(onClick = { onIntent(ShoppingListUiIntent.ConfirmDeleteCategory) }) {
+            text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.operationError?.let { ShoppingOperationError(it) }
+                Text(if (count > 0) stringResource(Res.string.shopping_category_delete_used, count)
+                else stringResource(Res.string.shopping_category_delete_unused)) } },
+            confirmButton = { WoorisseumTextButton(onClick = { onIntent(ShoppingListUiIntent.ConfirmDeleteCategory) }, enabled = state.canWrite) {
                 Text(stringResource(Res.string.shopping_delete), color = MaterialTheme.colorScheme.error)
             } },
             dismissButton = { WoorisseumTextButton(onClick = { onIntent(ShoppingListUiIntent.CancelDeleteCategory) }) {

@@ -6,9 +6,14 @@ import com.woorisseum.core.domain.shopping.ShoppingCategory
 import com.woorisseum.core.domain.shopping.ShoppingCategoryDefinition
 import com.woorisseum.core.domain.shopping.ShoppingCategoryNameError
 
-/** 화면에서만 사용하는 임시 목록이다. 저장·공유된 목록으로 표시하지 않는다. */
+/** DB 목록과 입력 초안을 구분한다. 로컬 저장은 기기 간 공유를 의미하지 않는다. */
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val loadError: ShoppingStorageError? = null,
+    val operationError: ShoppingStorageError? = null,
+    val canFinish: Boolean = false,
     val categories: List<ShoppingCategoryDefinition> = emptyList(),
     val categoriesInitialized: Boolean = false,
     val reservedCategoryNames: Set<String> = emptySet(),
@@ -25,6 +30,7 @@ data class ShoppingListUiState(
     val editor: ShoppingItemEditorUiState? = null,
     val presence: ShoppingPresenceUiState = ShoppingPresenceUiState.NotConnected,
 ) {
+    val canWrite: Boolean get() = categoriesInitialized && !isLoading && loadError == null && !isSaving
     val categoryUsage: Map<ShoppingCategory?, Int> get() = items.groupingBy { it.category }.eachCount()
     val totalPurchasedCount: Int get() = items.count { it.purchased }
     val itemsToFinish: List<ShoppingItem> get() = items.filter { it.purchased && it.id in finishItemIds.orEmpty() }
@@ -57,7 +63,12 @@ data class ShoppingCategoryEditorUiState(
     val hasChanges: Boolean get() = original == null || nameInput.trim() != original.name
 }
 
+enum class ShoppingStorageError { STORAGE, NOT_FOUND, CONFLICT, INVALID_INPUT }
+
 sealed interface ShoppingListUiIntent {
+    data object Retry : ShoppingListUiIntent
+    data object DismissStorageError : ShoppingListUiIntent
+    data object ReloadEditor : ShoppingListUiIntent
     data class InitializeCategories(val categories: List<ShoppingCategoryDefinition>, val reservedNames: Set<String>) : ShoppingListUiIntent
     data class MoveCategory(val category: ShoppingCategory, val before: ShoppingCategory?) : ShoppingListUiIntent
     data class OpenCategoryEditor(val category: ShoppingCategory? = null) : ShoppingListUiIntent

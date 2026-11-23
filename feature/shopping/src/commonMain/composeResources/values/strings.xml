@@ -1,7 +1,7 @@
 <resources>
     <string name="shopping_title">장보기</string>
     <string name="shopping_back">뒤로</string>
-    <string name="shopping_temporary_notice">이 목록은 임시로 사용하며 저장·공유되지 않아요.</string>
+    <string name="shopping_temporary_notice">이 기기에 저장돼요. 다른 기기와의 공유는 아직 연결되지 않았어요.</string>
     <string name="shopping_disconnected">공유 연결 전</string>
     <string name="shopping_presence_unavailable">상대방의 접속·편집 정보는 연결 후 확인할 수 있어요.</string>
     <string name="shopping_viewers">%1$s님과 함께 보고 있어요</string>
@@ -29,7 +29,7 @@
     <string name="shopping_quantity_hint">예: 2개, 1판, 500g</string>
     <string name="shopping_memo">메모 (선택)</string>
     <string name="shopping_cancel">취소</string>
-    <string name="shopping_apply">임시 적용</string>
+    <string name="shopping_apply">저장</string>
     <string name="shopping_delete">삭제</string>
     <string name="shopping_delete_item">%1$s 삭제</string>
     <string name="shopping_category_optional">카테고리 (선택)</string>
@@ -49,12 +49,12 @@
     <string name="shopping_finish">마치기</string>
     <string name="shopping_history_count">기록 %1$d</string>
     <string name="shopping_history_title">장보기 기록</string>
-    <string name="shopping_history_notice">임시 기록이에요. 앱을 다시 시작하면 목록과 기록이 모두 사라져요.</string>
+    <string name="shopping_history_notice">장보기 기록 저장은 준비 중이에요. 현재 물품은 이 기기에 저장돼요.</string>
     <string name="shopping_history_empty">아직 마친 장보기가 없어요</string>
     <string name="shopping_history_date">%1$d년 %2$d월 %3$d일 장보기 · %4$s:%5$s</string>
     <string name="shopping_history_item_count">구매한 물건 %1$d개</string>
     <string name="shopping_categories_title">장보기 카테고리</string>
-    <string name="shopping_categories_notice">분류 변경은 현재 장보기 목록에 적용돼요. 저장·공유 연결 전에는 앱을 다시 시작하면 초기화돼요.</string>
+    <string name="shopping_categories_notice">분류와 순서는 이 기기에 저장돼요. 변경은 현재 장보기 목록에 적용돼요.</string>
     <string name="shopping_categories_empty">아직 카테고리가 없어요. 미분류로도 물품을 추가할 수 있어요.</string>
     <string name="shopping_category_add">카테고리 추가</string>
     <string name="shopping_category_edit">카테고리 이름 수정</string>
@@ -72,4 +72,14 @@
     <string name="shopping_category_reorder">%1$s 순서 변경. 손잡이를 위아래로 끌어 이동하세요.</string>
     <string name="shopping_category_move_up">위로 이동</string>
     <string name="shopping_category_move_down">아래로 이동</string>
+    <string name="shopping_finish_unavailable">기록 저장 연결 전까지 장보기 마치기는 사용할 수 없어요. 구매 체크와 물품 목록은 저장돼요.</string>
+    <string name="shopping_loading">장보기 목록을 불러오는 중이에요</string>
+    <string name="shopping_saving">저장 중</string>
+    <string name="shopping_load_error">목록을 불러오지 못했어요. 다시 시도해 주세요.</string>
+    <string name="shopping_save_error">저장하지 못했어요. 입력은 유지되니 다시 시도해 주세요.</string>
+    <string name="shopping_not_found">대상이 없어졌어요. 최신 목록을 확인해 주세요.</string>
+    <string name="shopping_conflict">같은 이름이 있거나 다른 변경이 반영됐어요. 최신 목록을 확인해 주세요.</string>
+    <string name="shopping_invalid_input">입력값이나 선택한 카테고리를 확인해 주세요.</string>
+    <string name="shopping_retry">다시 불러오기</string>
+    <string name="shopping_reload_editor">입력을 버리고 최신 내용으로 다시 열기</string>
 </resources>

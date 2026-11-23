@@ -93,7 +93,7 @@ fun ShoppingListScreen(
                     ShoppingCategorySelector(state.quickCategory, categories = state.categories, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.QuickCategoryChanged(it)) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         WoorisseumTextField(
-                            value = state.quickNameInput,
+                            value = state.quickNameInput, enabled = state.canWrite,
                             onValueChange = { onIntent(ShoppingListUiIntent.QuickNameChanged(it)) },
                             label = { Text(stringResource(Res.string.shopping_quick_name)) },
                             isError = state.quickNameError != null,
@@ -101,7 +101,7 @@ fun ShoppingListScreen(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { hideKeyboard() }),
                         )
-                        WoorisseumPrimaryButton(onClick = { onIntent(ShoppingListUiIntent.AddItem) }) {
+                        WoorisseumPrimaryButton(onClick = { onIntent(ShoppingListUiIntent.AddItem) }, enabled = state.canWrite) {
                             Text(stringResource(Res.string.shopping_add))
                         }
                     }
@@ -123,15 +123,20 @@ fun ShoppingListScreen(
                 Text(stringResource(Res.string.shopping_temporary_notice), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            item(key = "storage") { ShoppingStorageStatus(state, onIntent) }
             item(key = "presence") { ShoppingPresenceHeader(state.presence) }
             item(key = "finish") {
                 WoorisseumSecondaryButton(onClick = {
                     revealedItemId = null
                     focus.clearFocus(); keyboard?.hide()
                     onIntent(ShoppingListUiIntent.RequestFinish)
-                }, enabled = state.totalPurchasedCount > 0, modifier = Modifier.fillMaxWidth()) {
+                }, enabled = state.canFinish && state.canWrite && state.totalPurchasedCount > 0, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(Res.string.shopping_finish_count, state.totalPurchasedCount))
                 }
+            }
+            if (!state.canFinish) item(key = "finish-unavailable") {
+                Text(stringResource(Res.string.shopping_finish_unavailable), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             item(key = "category-filter") {
                 ShoppingCategoryFilters(state.categoryFilter, state.categories) {
@@ -144,7 +149,7 @@ fun ShoppingListScreen(
                 Text(stringResource(Res.string.shopping_pending_count, pending.size),
                     style = MaterialTheme.typography.titleMedium)
             }
-            if (pending.isEmpty()) {
+            if (pending.isEmpty() && !state.isLoading && state.loadError == null) {
                 item(key = "empty") {
                     Column(Modifier.fillMaxWidth().padding(vertical = 32.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(stringResource(when {
@@ -158,7 +163,7 @@ fun ShoppingListScreen(
                 }
             }
             items(pending, key = { it.id }) { item -> ShoppingItemRow(item, state.presence, onIntent,
-                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard, categories = state.categories) }
+                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard, categories = state.categories, enabled = state.canWrite) }
             item(key = "purchased-header") {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 WoorisseumTextButton(onClick = { revealedItemId = null; onIntent(ShoppingListUiIntent.TogglePurchasedSection) }, enabled = purchased.isNotEmpty()) {
@@ -169,7 +174,7 @@ fun ShoppingListScreen(
             }
             if (state.purchasedExpanded) {
                 items(purchased, key = { it.id }) { item -> ShoppingItemRow(item, state.presence, onIntent,
-                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard, categories = state.categories) }
+                    revealed = revealedItemId == item.id, onReveal = onRevealItem, onBeforeAction = hideKeyboard, categories = state.categories, enabled = state.canWrite) }
             }
         }
     }
@@ -178,22 +183,22 @@ fun ShoppingListScreen(
 @Composable
 private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiState,
     onIntent: (ShoppingListUiIntent) -> Unit, revealed: Boolean, onReveal: (String?) -> Unit,
-    onBeforeAction: () -> Unit, categories: List<ShoppingCategoryDefinition>) {
+    onBeforeAction: () -> Unit, categories: List<ShoppingCategoryDefinition>, enabled: Boolean) {
     val live = presence as? ShoppingPresenceUiState.Connected
     val editing = live?.editing?.get(item.id).orEmpty()
     val recent = live?.recentChanges?.get(item.id)
     val checkLabel = stringResource(if (item.purchased) Res.string.shopping_uncomplete_item
         else Res.string.shopping_complete_item, item.name)
     val deleteLabel = stringResource(Res.string.shopping_delete_item, item.name)
-    SwipeToRevealDeleteRow(item.id, revealed, onReveal, deleteLabel, stringResource(Res.string.shopping_delete),
+    SwipeToRevealDeleteRow(item.id, revealed, onReveal, deleteLabel, stringResource(Res.string.shopping_delete), enabled = enabled,
         onDelete = { onBeforeAction(); onReveal(null); onIntent(ShoppingListUiIntent.DeleteItem(item.id)) }) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
-            Checkbox(checked = item.purchased,
+            Checkbox(checked = item.purchased, enabled = enabled,
                 onCheckedChange = { onBeforeAction(); onReveal(null); onIntent(ShoppingListUiIntent.SetPurchased(item.id, it)) },
                 modifier = Modifier.semantics { contentDescription = checkLabel })
             val editLabel = stringResource(Res.string.shopping_edit_item, item.name)
             Column(Modifier.weight(1f).background(if (recent != null) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f)
-                else Color.Transparent).clickable(role = Role.Button, onClickLabel = editLabel,
+                else Color.Transparent).clickable(enabled = enabled, role = Role.Button, onClickLabel = editLabel,
                 onClick = { onBeforeAction(); if (revealed) onReveal(null) else { onReveal(null); onIntent(ShoppingListUiIntent.OpenEditor(item.id)) } }).heightIn(min = 48.dp).padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -37,6 +37,8 @@ fun ShoppingItemEditorSheet(
     purchased: Boolean,
     categories: List<ShoppingCategoryDefinition> = emptyList(),
     editingUsers: List<ShoppingCollaboratorUiModel> = emptyList(),
+    isSaving: Boolean = false,
+    operationError: ShoppingStorageError? = null,
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     val imeInsets = WindowInsets.ime
@@ -52,7 +54,7 @@ fun ShoppingItemEditorSheet(
         }
     }
     ModalBottomSheet(
-        onDismissRequest = { keyboard?.hide(); onIntent(ShoppingListUiIntent.CancelEdit) },
+        onDismissRequest = { if (!isSaving) { keyboard?.hide(); onIntent(ShoppingListUiIntent.CancelEdit) } },
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden,
             enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded), confirmValueChange = confirmSheetChange),
         // 키보드가 열린 동안 시작한 드래그가 시트 닫기로 이어지지 않게 한다.
@@ -92,30 +94,38 @@ fun ShoppingItemEditorSheet(
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 WoorisseumTextField(value = state.nameInput, onValueChange = { onIntent(ShoppingListUiIntent.EditName(it)) },
                     label = { Text(stringResource(Res.string.shopping_quick_name)) }, modifier = Modifier.fillMaxWidth(),
-                    singleLine = true, isError = state.nameError != null,
+                    singleLine = true, enabled = !isSaving, isError = state.nameError != null,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { hideKeyboard() }),
                     supportingText = state.nameError?.let { error -> { Text(shoppingNameErrorText(error)) } })
                 Text(stringResource(Res.string.shopping_category_optional), style = MaterialTheme.typography.labelLarge)
                 ShoppingCategorySelector(state.category, categories = categories, onBeforeOpen = hideKeyboard) { onIntent(ShoppingListUiIntent.EditCategory(it)) }
                 WoorisseumTextField(value = state.quantityInput, onValueChange = { onIntent(ShoppingListUiIntent.EditQuantity(it)) },
-                    label = { Text(stringResource(Res.string.shopping_quantity)) }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                    label = { Text(stringResource(Res.string.shopping_quantity)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !isSaving,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { hideKeyboard() }),
                     supportingText = { Text(stringResource(Res.string.shopping_quantity_hint)) })
                 WoorisseumTextField(value = state.memoInput, onValueChange = { onIntent(ShoppingListUiIntent.EditMemo(it)) },
-                    label = { Text(stringResource(Res.string.shopping_memo)) }, modifier = Modifier.fillMaxWidth(), minLines = 2, maxLines = 5)
+                    label = { Text(stringResource(Res.string.shopping_memo)) }, modifier = Modifier.fillMaxWidth(), enabled = !isSaving, minLines = 2, maxLines = 5)
                 Text(stringResource(Res.string.shopping_temporary_notice), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
+                operationError?.let { error ->
+                    ShoppingOperationError(error)
+                    if (error == ShoppingStorageError.CONFLICT) {
+                        WoorisseumSecondaryButton(onClick = { onIntent(ShoppingListUiIntent.ReloadEditor) }, enabled = !isSaving) {
+                            Text(stringResource(Res.string.shopping_reload_editor))
+                        }
+                    }
+                }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    WoorisseumSecondaryButton(onClick = { hideKeyboard(); onIntent(ShoppingListUiIntent.CancelEdit) }, modifier = Modifier.weight(1f)) {
+                    WoorisseumSecondaryButton(onClick = { hideKeyboard(); onIntent(ShoppingListUiIntent.CancelEdit) }, enabled = !isSaving, modifier = Modifier.weight(1f)) {
                         Text(stringResource(Res.string.shopping_cancel))
                     }
                     WoorisseumPrimaryButton(onClick = {
                         hideKeyboard()
                         onIntent(ShoppingListUiIntent.SubmitEdit)
-                    }, enabled = state.hasChanges, modifier = Modifier.weight(1f)) {
-                        Text(stringResource(Res.string.shopping_apply))
+                    }, enabled = state.hasChanges && !isSaving, modifier = Modifier.weight(1f)) {
+                        Text(stringResource(if (isSaving) Res.string.shopping_saving else Res.string.shopping_apply))
                     }
                 }
             }

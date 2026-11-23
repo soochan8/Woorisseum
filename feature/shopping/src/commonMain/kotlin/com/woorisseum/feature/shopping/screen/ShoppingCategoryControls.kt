@@ -62,7 +62,7 @@ internal fun shoppingCategoryLabel(category: ShoppingCategory?, categories: List
 internal fun InitializeShoppingCategories(onIntent: (ShoppingListUiIntent) -> Unit) {
     val defaults = ShoppingCategory.defaults.map { ShoppingCategoryDefinition(it, defaultShoppingCategoryLabel(it)) }
     val reservedNames = setOf(stringResource(Res.string.shopping_category_all), stringResource(Res.string.shopping_category_none))
-    LaunchedEffect(defaults) {
+    LaunchedEffect(defaults, reservedNames) {
         onIntent(ShoppingListUiIntent.InitializeCategories(defaults, reservedNames))
     }
 }

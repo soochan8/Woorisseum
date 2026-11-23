@@ -29,6 +29,7 @@ fun ShoppingListRoute(
     state.editor?.let { editor ->
         state.currentEditedItem?.let { current ->
             ShoppingItemEditorSheet(editor, viewModel::onIntent, purchased = current.purchased, categories = state.categories,
+                isSaving = state.isSaving, operationError = state.operationError,
                 editingUsers = (state.presence as? ShoppingPresenceUiState.Connected)?.editing?.get(current.id).orEmpty())
         }
     }
