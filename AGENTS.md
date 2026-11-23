@@ -13,6 +13,7 @@
 | [Compose](docs/rules/compose.md) | Compose 화면·컴포넌트·테마·리소스·접근성 작업 |
 | [SOLID와 단순성](docs/rules/solid.md) | Kotlin 운영 코드 설계·구현·리팩토링 전반 |
 | [KMP와 빌드](docs/rules/kmp-build.md) | 소스셋, 플랫폼 API, Gradle, 라이브러리, 모듈 구조·Baseline 작업 |
+| [로컬 DB](docs/rules/local-database.md) | DB·Entity·DAO·영속 저장 Repository, 트랜잭션·동시성·마이그레이션·동기화 경계 작업 |
 
 - 이 파일은 공통 원칙과 진입점이며 상세 적용 방법·예시는 연결된 문서에 둔다. 규칙을 변경하면 서로 모순되지 않도록 함께 갱신한다.
 - 문서는 설계 기준이다. 실제 구현 여부·라이브러리 API·의존성은 소스와 Gradle 설정으로 확인한다.
