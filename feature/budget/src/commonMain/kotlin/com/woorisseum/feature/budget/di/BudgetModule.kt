@@ -7,6 +7,6 @@ import org.koin.dsl.module
 
 val budgetModule = module {
     viewModel { parameters ->
-        MonthlyBudgetViewModel(initialMonth = parameters.get<YearMonth>(), calculateSummary = get())
+        MonthlyBudgetViewModel(initialMonth = parameters.get<YearMonth>(), calculateSummary = get(), budgetRepository = get(), expenseRepository = get())
     }
 }

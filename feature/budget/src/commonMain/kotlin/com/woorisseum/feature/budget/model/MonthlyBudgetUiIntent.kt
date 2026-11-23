@@ -1,6 +1,7 @@
 package com.woorisseum.feature.budget.model
 
 sealed interface MonthlyBudgetUiIntent {
+    data object Retry : MonthlyBudgetUiIntent
     data object PreviousMonth : MonthlyBudgetUiIntent
     data object NextMonth : MonthlyBudgetUiIntent
     data object EditBudget : MonthlyBudgetUiIntent

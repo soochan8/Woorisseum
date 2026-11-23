@@ -10,6 +10,7 @@ import kotlin.math.roundToLong
 /** 계산된 값을 표시 형식으로 변환한다. 상태 변경이나 업무 계산을 하지 않는다. */
 fun BudgetSummary.toUiModel(): BudgetSummaryUiModel {
     val headline = when {
+        totalOverflow -> BudgetHeadline.OVERFLOW
         budgetAmount == null -> BudgetHeadline.UNSET
         spentAmount == null -> BudgetHeadline.WAITING
         remainingAmount?.let { it < 0L } == true -> BudgetHeadline.EXCEEDED
@@ -17,12 +18,14 @@ fun BudgetSummary.toUiModel(): BudgetSummaryUiModel {
         else -> BudgetHeadline.REMAINING
     }
     val usage = when {
+        totalOverflow -> BudgetUsage.OVERFLOW
         budgetAmount == null -> BudgetUsage.UNSET
         budgetAmount == 0L -> BudgetUsage.ZERO_BUDGET
         spentAmount == null -> BudgetUsage.WAITING
         else -> BudgetUsage.AVAILABLE
     }
     return BudgetSummaryUiModel(
+        totalOverflow = totalOverflow,
         budgetAmountText = budgetAmount?.formatBudgetAmount(),
         spentAmountText = spentAmount?.formatBudgetAmount(),
         headlineAmountText = remainingAmount?.let {
@@ -36,6 +39,7 @@ fun BudgetSummary.toUiModel(): BudgetSummaryUiModel {
         categories = categories.map {
             BudgetCategoryUiModel(
                 category = it.category,
+                amountOverflow = totalOverflow && it.amount == null,
                 amountText = it.amount?.formatBudgetAmount(),
                 sharePercentText = it.share?.let { share -> (share * 100).roundToLong().toString() },
                 progress = it.share?.coerceIn(0.0, 1.0)?.toFloat() ?: 0f,

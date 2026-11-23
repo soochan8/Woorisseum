@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -107,16 +108,29 @@ fun MonthlyBudgetScreen(
                 Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(Res.string.budget_month, state.month.year, state.month.month.number),
                         Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-                    IconButton(onClick = { onIntent(MonthlyBudgetUiIntent.PreviousMonth) }) {
+                    IconButton(onClick = { onIntent(MonthlyBudgetUiIntent.PreviousMonth) }, enabled = state.editor?.isSaving != true) {
                         Icon(painterResource(Res.drawable.budget_chevron_left),
                             stringResource(Res.string.budget_previous_month), Modifier.size(20.dp))
                     }
-                    IconButton(onClick = { onIntent(MonthlyBudgetUiIntent.NextMonth) }) {
+                    IconButton(onClick = { onIntent(MonthlyBudgetUiIntent.NextMonth) }, enabled = state.editor?.isSaving != true) {
                         Icon(painterResource(Res.drawable.budget_chevron_right),
                             stringResource(Res.string.budget_next_month), Modifier.size(20.dp))
                     }
                 }
             }
+            if (state.isLoading || state.loadFailed) {
+                item {
+                    Column(Modifier.fillMaxWidth().padding(vertical = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (state.isLoading) CircularProgressIndicator()
+                        else {
+                            Text(stringResource(Res.string.budget_load_failed), color = MaterialTheme.colorScheme.error)
+                            WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.Retry) }) {
+                                Text(stringResource(Res.string.budget_retry))
+                            }
+                        }
+                    }
+                }
+            } else {
             item { BudgetHeadlineContent(state.summary) }
             item {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -136,13 +150,10 @@ fun MonthlyBudgetScreen(
             item { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
             item { Text(stringResource(Res.string.budget_categories_title), style = MaterialTheme.typography.titleMedium) }
             items(state.summary.categories, key = { it.category.name }) { category -> BudgetCategoryContent(category) }
-            if (state.summary.spentAmountText == null) {
+            if (state.summary.spentAmountText == null && !state.summary.totalOverflow) {
                 item { Text(stringResource(Res.string.budget_waiting_description),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
             }
-            if (state.isTemporaryBudget) {
-                item { Text(stringResource(Res.string.budget_temporary_notice),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) }
             }
             item { Box(Modifier.height(12.dp)) }
         }
@@ -155,6 +166,7 @@ fun MonthlyBudgetScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     WoorisseumTextField(
                         value = editor.amountInput,
+                        enabled = !editor.isSaving,
                         onValueChange = { onIntent(MonthlyBudgetUiIntent.AmountChanged(it)) },
                         label = { Text(stringResource(Res.string.budget_total)) },
                         suffix = { Text(stringResource(Res.string.budget_currency)) },
@@ -163,17 +175,18 @@ fun MonthlyBudgetScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         supportingText = editor.error?.let { error -> { Text(budgetErrorText(error)) } },
                     )
+                    if (editor.saveFailed) Text(stringResource(Res.string.budget_save_failed), color = MaterialTheme.colorScheme.error)
                     Text(stringResource(Res.string.budget_editor_notice),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             confirmButton = {
-                WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.ApplyBudget) }) {
-                    Text(stringResource(Res.string.budget_apply))
+                WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.ApplyBudget) }, enabled = !editor.isSaving) {
+                    Text(stringResource(if (editor.isSaving) Res.string.budget_saving else Res.string.budget_apply))
                 }
             },
             dismissButton = {
-                WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.CancelEditing) }) {
+                WoorisseumTextButton(onClick = { onIntent(MonthlyBudgetUiIntent.CancelEditing) }, enabled = !editor.isSaving) {
                     Text(stringResource(Res.string.budget_cancel))
                 }
             },
@@ -189,11 +202,16 @@ private fun BudgetHeadlineContent(summary: BudgetSummaryUiModel) {
             BudgetHeadline.UNSET -> Res.string.budget_headline_unset
             BudgetHeadline.WAITING, BudgetHeadline.REMAINING -> Res.string.budget_headline_remaining
             BudgetHeadline.EXCEEDED -> Res.string.budget_headline_exceeded
+            BudgetHeadline.OVERFLOW -> Res.string.budget_headline_overflow
             BudgetHeadline.ZERO -> Res.string.budget_headline_zero
         }), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelLarge)
         val amount = summary.headlineAmountText
         if (amount == null) {
-            Text(stringResource(Res.string.budget_waiting), style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(when (summary.headline) {
+                BudgetHeadline.UNSET -> Res.string.budget_unset
+                BudgetHeadline.OVERFLOW -> Res.string.budget_overflow
+                else -> Res.string.budget_waiting
+            }), style = MaterialTheme.typography.headlineMedium)
         } else {
             val currency = stringResource(Res.string.budget_currency)
             Text(buildAnnotatedString {
@@ -210,10 +228,11 @@ private fun BudgetHeadlineContent(summary: BudgetSummaryUiModel) {
 private fun BudgetUsageContent(summary: BudgetSummaryUiModel) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(summary.spentAmountText?.let { stringResource(Res.string.budget_spent, it) }
-            ?: stringResource(Res.string.budget_spent_waiting), style = MaterialTheme.typography.bodyMedium)
+            ?: stringResource(if (summary.totalOverflow) Res.string.budget_overflow else Res.string.budget_spent_waiting), style = MaterialTheme.typography.bodyMedium)
         BudgetProgress(summary.progress, known = summary.usage == BudgetUsage.AVAILABLE,
             label = stringResource(Res.string.budget_usage_label))
         Text(stringResource(when (summary.usage) {
+            BudgetUsage.OVERFLOW -> Res.string.budget_usage_overflow
             BudgetUsage.UNSET -> Res.string.budget_usage_unset
             BudgetUsage.WAITING -> Res.string.budget_usage_waiting
             BudgetUsage.ZERO_BUDGET -> Res.string.budget_usage_zero
@@ -237,9 +256,9 @@ private fun BudgetCategoryContent(category: BudgetCategoryUiModel) {
                 stringResource(Res.string.budget_category_with_share, categoryName, it)
             } ?: categoryName, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
             Text(category.amountText?.let { stringResource(Res.string.budget_won, it) }
-                ?: stringResource(Res.string.budget_waiting), style = MaterialTheme.typography.bodyMedium)
+                ?: stringResource(if (category.amountOverflow) Res.string.budget_overflow else Res.string.budget_waiting), style = MaterialTheme.typography.bodyMedium)
         }
-        BudgetProgress(category.progress, known = category.amountText != null,
+        BudgetProgress(category.progress, known = category.sharePercentText != null,
             label = stringResource(Res.string.budget_category_share))
     }
 }

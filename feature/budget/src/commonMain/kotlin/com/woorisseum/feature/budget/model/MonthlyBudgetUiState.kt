@@ -8,7 +8,8 @@ data class MonthlyBudgetUiState(
     val month: YearMonth,
     val summary: BudgetSummaryUiModel,
     val editor: BudgetEditorUiState? = null,
-    val isTemporaryBudget: Boolean = false,
+    val isLoading: Boolean = false,
+    val loadFailed: Boolean = false,
 )
 
 data class BudgetSummaryUiModel(
@@ -21,21 +22,25 @@ data class BudgetSummaryUiModel(
     val isUsageAboveDisplayLimit: Boolean,
     val progress: Float,
     val categories: List<BudgetCategoryUiModel>,
+    val totalOverflow: Boolean = false,
 )
 
-enum class BudgetHeadline { UNSET, WAITING, REMAINING, EXCEEDED, ZERO }
-enum class BudgetUsage { UNSET, WAITING, ZERO_BUDGET, AVAILABLE }
+enum class BudgetHeadline { UNSET, WAITING, REMAINING, EXCEEDED, ZERO, OVERFLOW }
+enum class BudgetUsage { UNSET, WAITING, ZERO_BUDGET, AVAILABLE, OVERFLOW }
 
 data class BudgetCategoryUiModel(
     val category: ExpenseCategory,
     val amountText: String?,
     val sharePercentText: String?,
     val progress: Float,
+    val amountOverflow: Boolean = false,
 )
 
 data class BudgetEditorUiState(
     val amountInput: String = "",
     val error: BudgetAmountInputError? = null,
+    val isSaving: Boolean = false,
+    val saveFailed: Boolean = false,
 )
 
 enum class BudgetAmountInputError { REQUIRED, INVALID_INTEGER, OUT_OF_RANGE }
