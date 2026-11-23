@@ -1,14 +1,16 @@
 package com.woorisseum.feature.transaction.fixed
 
+import com.woorisseum.feature.transaction.model.ExpenseOperationError
 import com.woorisseum.core.domain.transaction.fixed.FixedExpensePaymentStatus
 import com.woorisseum.core.domain.transaction.fixed.FixedExpenseType
 import com.woorisseum.feature.transaction.model.ExpenseAmountInputError
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
 
-/** summary=null은 조회 미연결이다. 실제로 조회된 빈 목록과 구분한다. */
-data class FixedExpenseListUiState(val month: YearMonth, val summary: FixedExpenseSummaryUiModel? = null)
-data class FixedExpenseSummaryUiModel(val totalAmountText: String, val paidAmountText: String?, val items: List<FixedExpenseItemUiModel>)
+/** 로딩·조회 실패·조회된 빈 목록을 구분한다. */
+data class FixedExpenseListUiState(val month: YearMonth, val summary: FixedExpenseSummaryUiModel? = null,
+    val isLoading: Boolean = false, val loadError: ExpenseOperationError? = null)
+data class FixedExpenseSummaryUiModel(val totalAmountText: String, val paidAmountText: String?, val items: List<FixedExpenseItemUiModel>, val totalOverflow: Boolean = false)
 data class FixedExpenseItemUiModel(
     val id: String, val type: FixedExpenseType, val name: String?,
     val amountText: String, val dueDate: LocalDate, val paymentStatus: FixedExpensePaymentStatus,
@@ -29,10 +31,14 @@ data class FixedExpenseFormUiState(
 )
 data class FixedExpenseEditorUiState(
     val planId: String?, val form: FixedExpenseFormUiState?,
-    val hasChanges: Boolean = false, val showStorageUnavailable: Boolean = false,
+    val hasChanges: Boolean = false,
+    val isLoading: Boolean = false, val isSaving: Boolean = false, val saved: Boolean = false,
+    val loadError: ExpenseOperationError? = null, val saveError: ExpenseOperationError? = null,
 )
 
 sealed interface FixedExpenseListUiIntent {
+    data class ShowMonth(val month: YearMonth) : FixedExpenseListUiIntent
+    data object Retry : FixedExpenseListUiIntent
     data object PreviousMonth : FixedExpenseListUiIntent
     data object NextMonth : FixedExpenseListUiIntent
     data object AddPlan : FixedExpenseListUiIntent
@@ -42,6 +48,8 @@ sealed interface FixedExpenseListUiEffect {
     data class OpenEditor(val month: YearMonth, val planId: String? = null) : FixedExpenseListUiEffect
 }
 sealed interface FixedExpenseEditorUiIntent {
+    data object Reload : FixedExpenseEditorUiIntent
+    data object Stop : FixedExpenseEditorUiIntent
     data class TypeSelected(val type: FixedExpenseType) : FixedExpenseEditorUiIntent
     data class NameChanged(val value: String) : FixedExpenseEditorUiIntent
     data class AmountChanged(val value: String) : FixedExpenseEditorUiIntent

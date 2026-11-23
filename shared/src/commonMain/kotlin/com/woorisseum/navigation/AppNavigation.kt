@@ -61,6 +61,7 @@ import kotlin.time.Clock
 @Serializable private data class CardEditorDestination(val cardId: String? = null)
 
 private const val REQUESTED_EXPENSE_MONTH = "requestedExpenseMonth"
+private const val REQUESTED_FIXED_MONTH = "requestedFixedExpenseMonth"
 
 private enum class AppTab(val route: Any, val label: StringResource, val icon: DrawableResource) {
     Expenses(ExpenseListDestination, Res.string.nav_expenses, Res.drawable.nav_expenses),
@@ -233,12 +234,19 @@ internal fun AppNavigation() {
         }
         composable<FixedExpenseListDestination> { entry ->
             val route = entry.toRoute<FixedExpenseListDestination>()
+            val requestedMonth by entry.savedStateHandle.getStateFlow<String?>(REQUESTED_FIXED_MONTH, null).collectAsStateWithLifecycle()
             FixedExpenseListRoute(YearMonth(route.year, route.month), onBack = navigateBack,
+                requestedMonth = requestedMonth?.let(YearMonth::parse),
+                onMonthHandled = { entry.savedStateHandle[REQUESTED_FIXED_MONTH] = null },
                 onOpenEditor = { month, id -> navController.navigate(FixedExpenseEditorDestination(month.year, month.month.number, id)) { launchSingleTop = true } })
         }
         composable<FixedExpenseEditorDestination> { entry ->
             val route = entry.toRoute<FixedExpenseEditorDestination>()
-            FixedExpenseEditorRoute(YearMonth(route.year, route.month), onBack = navigateBack, planId = route.planId)
+            FixedExpenseEditorRoute(YearMonth(route.year, route.month), onBack = navigateBack, planId = route.planId,
+                onSaved = { month ->
+                    navController.getBackStackEntry<FixedExpenseListDestination>().savedStateHandle[REQUESTED_FIXED_MONTH] = month.toString()
+                    navigateBack()
+                })
         }
     }
 }

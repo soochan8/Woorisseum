@@ -63,8 +63,8 @@
     <string name="fixed_expense_waiting">집계 대기</string>
     <string name="fixed_expense_paid_total">납부 확인 금액 %1$s원</string>
     <string name="fixed_expense_payment_waiting">납부 확인 대기</string>
-    <string name="fixed_expense_empty_title">등록한 고정지출이 없어요</string>
-    <string name="fixed_expense_empty_description">매달 나가는 지출부터 정리해 보세요</string>
+    <string name="fixed_expense_empty_title">이번 달 예정된 고정지출이 없어요</string>
+    <string name="fixed_expense_empty_description">다른 월을 보거나 새 계획을 추가해 보세요</string>
     <string name="fixed_expense_lookup_title">고정지출 조회 준비 중이에요</string>
     <string name="fixed_expense_lookup_description">조회 연결 후 등록한 계획과 월별 예정 금액을 확인할 수 있어요.</string>
     <string name="fixed_expense_payment_notice">납부 확인은 연결 후 제공돼요. 예정일이 지나도 자동으로 납부 처리하지 않아요.</string>
@@ -90,7 +90,7 @@
     <string name="fixed_expense_paid">납부 완료</string>
     <string name="fixed_expense_unpaid">납부 전</string>
     <string name="fixed_expense_unknown_payment">확인 전</string>
-    <string name="fixed_expense_editor_notice">계획 등록은 실제 지출 기록과 별개예요. 아직 저장 기능이 연결되지 않아 입력한 내용은 저장되지 않아요.</string>
+    <string name="fixed_expense_editor_notice">저장한 계획은 매월 유지돼요. 납부 처리나 실제 지출 기록은 별도로 연결할 예정이에요.</string>
     <string name="fixed_expense_storage_unavailable">입력은 확인했어요. 저장 기능 연결 전이라 변경 내용은 저장되지 않았어요.</string>
     <string name="expense_open_shopping">장보기</string>
     <string name="card_management_title">카드 관리</string>
@@ -143,4 +143,11 @@
     <string name="expense_reload_confirm">현재 입력을 버리고 최신 내역으로 바꿀까요?</string>
     <string name="expense_save_failed">저장하지 못했어요. 입력은 유지했으니 다시 시도해 주세요.</string>
     <string name="expense_amount_pending">—</string>
+    <string name="fixed_expense_db_error">계획을 읽거나 저장하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="fixed_expense_not_found">선택한 월에 적용할 계획이 없거나 이미 중단됐어요.</string>
+    <string name="fixed_expense_conflict">다른 변경이 먼저 반영됐어요. 입력은 유지했으니 최신 계획을 확인해 주세요.</string>
+    <string name="fixed_expense_invalid_input">금액·결제일·적용 월을 확인해 주세요. 기존 계획의 최초 시작월보다 앞서 적용할 수 없어요.</string>
+    <string name="fixed_expense_edit_policy">선택한 월부터 적용하고 이전 월은 보존해요. 이후에 예약한 변경이 있으면 그 변경 전까지 적용돼요.</string>
+    <string name="fixed_expense_stop">고정지출 중단</string>
+    <string name="fixed_expense_stop_confirm">%1$d년 %2$d월부터 이 계획을 중단할까요? 이전 월은 유지돼요. 입력 중인 변경은 저장하지 않으며 실제 지출 내역은 바뀌지 않아요.</string>
 </resources>

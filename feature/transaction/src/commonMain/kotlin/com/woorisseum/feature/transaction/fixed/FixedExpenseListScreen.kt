@@ -55,7 +55,8 @@ fun FixedExpenseListScreen(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(Res.string.fixed_expense_total), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(state.summary?.totalAmountText?.let { stringResource(Res.string.expense_amount_won, it) }
+                    Text(if (state.summary?.totalOverflow == true) stringResource(Res.string.expense_total_overflow)
+                        else state.summary?.totalAmountText?.let { stringResource(Res.string.expense_amount_won, it) }
                         ?: stringResource(Res.string.fixed_expense_waiting),
                         style = MaterialTheme.typography.displaySmall)
                     Text(state.summary?.paidAmountText?.let { stringResource(Res.string.fixed_expense_paid_total, it) }
@@ -65,7 +66,9 @@ fun FixedExpenseListScreen(
             }
             item { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
             val summary = state.summary
-            if (summary == null) {
+            if (state.isLoading || state.loadError != null) {
+                item { FixedExpenseOperationStatus(state.isLoading, state.loadError, { onIntent(FixedExpenseListUiIntent.Retry) }) }
+            } else if (summary == null) {
                 item { FixedExpenseUnavailableContent() }
             } else if (summary.items.isEmpty()) {
                 item {
@@ -111,13 +114,13 @@ private fun FixedExpenseRow(item: FixedExpenseItemUiModel, onClick: () -> Unit) 
 }
 
 @Composable
-internal fun FixedExpenseMonthSelector(month: YearMonth, onPrevious: () -> Unit, onNext: () -> Unit) {
+internal fun FixedExpenseMonthSelector(month: YearMonth, onPrevious: () -> Unit, onNext: () -> Unit, enabled: Boolean = true) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(stringResource(Res.string.expense_month, month.year, month.month.number), Modifier.weight(1f),
             style = MaterialTheme.typography.titleSmall)
-        IconButton(onClick = onPrevious) { Icon(painterResource(Res.drawable.ic_chevron_left),
+        IconButton(onClick = onPrevious, enabled = enabled) { Icon(painterResource(Res.drawable.ic_chevron_left),
             stringResource(Res.string.expense_previous_month), Modifier.size(20.dp)) }
-        IconButton(onClick = onNext) { Icon(painterResource(Res.drawable.ic_chevron_right),
+        IconButton(onClick = onNext, enabled = enabled) { Icon(painterResource(Res.drawable.ic_chevron_right),
             stringResource(Res.string.expense_next_month), Modifier.size(20.dp)) }
     }
 }

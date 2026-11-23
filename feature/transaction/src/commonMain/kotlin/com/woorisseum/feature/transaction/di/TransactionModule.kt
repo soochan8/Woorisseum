@@ -19,8 +19,8 @@ import org.koin.dsl.module
 val transactionModule = module {
     viewModel { CardListViewModel(repository = get()) }
     viewModel { parameters -> CardEditorViewModel(repository = get(), cardId = parameters.getOrNull<String>()) }
-    viewModel { parameters -> FixedExpenseListViewModel(initialMonth = parameters.get<YearMonth>(), calculateMonthly = get()) }
-    viewModel { parameters -> FixedExpenseEditorViewModel(initialMonth = parameters.get<YearMonth>(), planId = parameters.getOrNull<String>()) }
+    viewModel { parameters -> FixedExpenseListViewModel(initialMonth = parameters.get<YearMonth>(), calculateMonthly = get(), repository = get()) }
+    viewModel { parameters -> FixedExpenseEditorViewModel(initialMonth = parameters.get<YearMonth>(), planId = parameters.getOrNull<String>(), repository = get()) }
     viewModel { parameters -> ExpenseDetailViewModel(expenseId = parameters.get<String>(), repository = get()) }
     viewModel { parameters -> ExpenseEditViewModel(expenseId = parameters.get<String>(), cardRepository = get(), repository = get()) }
     viewModel {
