@@ -21,6 +21,7 @@ data class ExpenseListUiState(
     // 조회 연결 시 필터 적용 전 월별 원본 목록으로 결정한다.
     val hasExpensesInMonth: Boolean = false,
     val availablePaymentMethods: List<PaymentMethod> = listOf(PaymentMethod.Cash, PaymentMethod.BankTransfer),
+    val cardLoadFailed: Boolean = false,
     val dayGroups: List<ExpenseDayUiModel> = emptyList(),
 )
 

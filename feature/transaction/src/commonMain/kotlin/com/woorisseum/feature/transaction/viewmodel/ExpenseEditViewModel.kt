@@ -13,9 +13,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import com.woorisseum.core.domain.common.AppResult
 
 /** 원본과 입력을 분리한다. 저장 기능 연결 전에는 제출해도 원본 갱신·성공 이동을 하지 않는다. */
-class ExpenseEditViewModel(expenseId: String, cardRepository: CardRepository, initialExpense: Expense? = null) : ViewModel() {
+class ExpenseEditViewModel(expenseId: String, private val cardRepository: CardRepository, initialExpense: Expense? = null) : ViewModel() {
     init { require(initialExpense == null || initialExpense.id == expenseId) }
     private val originalForm = initialExpense?.toFormUiState()
     private val _uiState = MutableStateFlow(ExpenseEditUiState(expenseId, form = originalForm))
@@ -23,9 +25,19 @@ class ExpenseEditViewModel(expenseId: String, cardRepository: CardRepository, in
     private val _effects = MutableSharedFlow<ExpenseEditUiEffect>()
     val effects = _effects.asSharedFlow()
 
-    init {
-        viewModelScope.launch {
-            cardRepository.observeCards().collect { cards ->
+    private var cardObservation: Job? = null
+
+    init { observeCards() }
+
+    private fun observeCards() {
+        cardObservation?.cancel()
+        cardObservation = viewModelScope.launch {
+            cardRepository.observeCards().collect { result ->
+                if (result is AppResult.Failure) {
+                    _uiState.update { state -> state.copy(form = state.form?.copy(cardLoadFailed = true)) }
+                    return@collect
+                }
+                val cards = (result as AppResult.Success).data
                 _uiState.update { state ->
                     val form = state.form?.withCards(cards, originalForm?.paymentMethod as? PaymentMethod.Card)
                     state.copy(form = form, hasChanges = form != null && form.inputValues() != originalForm?.inputValues())
@@ -35,6 +47,10 @@ class ExpenseEditViewModel(expenseId: String, cardRepository: CardRepository, in
     }
 
     fun onIntent(intent: ExpenseEditUiIntent) {
+        if (intent is ExpenseEditUiIntent.FormChanged && intent.intent == ExpenseFormUiIntent.RetryCards) {
+            observeCards()
+            return
+        }
         when (intent) {
             is ExpenseEditUiIntent.FormChanged -> _uiState.update { state ->
                 val form = state.form?.changed(intent.intent) ?: return@update state

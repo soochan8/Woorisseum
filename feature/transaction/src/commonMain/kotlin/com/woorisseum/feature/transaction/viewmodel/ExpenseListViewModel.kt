@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import com.woorisseum.core.domain.common.AppResult
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -32,7 +34,7 @@ import kotlinx.datetime.plusMonth
 /** 월·분류 선택과 이동 요청을 처리한다. 데이터 조회는 Repository 연결 단계에서 추가한다. */
 class ExpenseListViewModel(
     initialMonth: YearMonth,
-    cardRepository: CardRepository,
+    private val cardRepository: CardRepository,
     initialExpenses: List<Expense>? = null,
     private val today: () -> LocalDate = { Clock.System.todayIn(TimeZone.currentSystemDefault()) },
 ) : ViewModel() {
@@ -46,15 +48,25 @@ class ExpenseListViewModel(
     private val _effects = MutableSharedFlow<ExpenseListUiEffect>()
     val effects = _effects.asSharedFlow()
 
-    init {
-        viewModelScope.launch {
-            cardRepository.observeCards().collect { cards ->
+    private var cardObservation: Job? = null
+
+    init { observeCards() }
+
+    private fun observeCards() {
+        cardObservation?.cancel()
+        cardObservation = viewModelScope.launch {
+            cardRepository.observeCards().collect { result ->
+                if (result is AppResult.Failure) {
+                    _uiState.update { it.copy(cardLoadFailed = true) }
+                    return@collect
+                }
+                val cards = (result as AppResult.Success).data
                 _uiState.update { state ->
                     val methods = cards.toPaymentMethods()
                     val selected = state.filters.paymentMethod?.takeIf { filter ->
                         methods.any { it.toExpensePaymentFilter() == filter }
                     }
-                    present(state.copy(availablePaymentMethods = methods, filters = state.filters.copy(paymentMethod = selected)))
+                    present(state.copy(cardLoadFailed = false, availablePaymentMethods = methods, filters = state.filters.copy(paymentMethod = selected)))
                 }
             }
         }
@@ -62,6 +74,7 @@ class ExpenseListViewModel(
 
     fun onIntent(intent: ExpenseListUiIntent) {
         when (intent) {
+            ExpenseListUiIntent.RetryCards -> observeCards()
             ExpenseListUiIntent.OpenSearch -> _uiState.update { if (it.isSearchOpen) it else present(it.copy(isSearchOpen = true, searchPeriod = ExpenseSearchPeriod())) }
             ExpenseListUiIntent.CloseSearch -> _uiState.update { present(it.copy(isSearchOpen = false, searchQuery = "", searchPeriod = ExpenseSearchPeriod())) }
             ExpenseListUiIntent.ClearSearch -> _uiState.update { present(it.copy(searchQuery = "")) }
@@ -130,6 +143,7 @@ class ExpenseListViewModel(
         )
         return if (previousState == null) state else state.copy(
             availablePaymentMethods = previousState.availablePaymentMethods,
+            cardLoadFailed = previousState.cardLoadFailed,
             isSearchOpen = previousState.isSearchOpen,
             searchQuery = previousState.searchQuery,
             searchPeriod = previousState.searchPeriod,

@@ -131,4 +131,6 @@
     <string name="expense_search_period_custom_title">검색 시작일·종료일</string>
     <string name="expense_search_period_range">%1$d.%2$d.%3$d ~ %4$d.%5$d.%6$d</string>
     <string name="expense_search_day_full">%1$d년 %2$d월 %3$d일</string>
+    <string name="card_load_failed">카드 목록을 불러오지 못했어요.</string>
+    <string name="card_retry">다시 불러오기</string>
 </resources>

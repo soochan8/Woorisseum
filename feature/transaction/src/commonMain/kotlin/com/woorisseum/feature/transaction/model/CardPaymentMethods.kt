@@ -18,11 +18,11 @@ internal fun ExpenseFormUiState.withCards(
     val selectedCard = paymentMethod as? PaymentMethod.Card
     val selected = if (selectedCard == null) paymentMethod else
         available.filterIsInstance<PaymentMethod.Card>().firstOrNull { it.cardId == selectedCard.cardId }
-    return copy(availablePaymentMethods = available, paymentMethod = selected)
+    return copy(availablePaymentMethods = available, paymentMethod = selected, cardLoadFailed = false)
 }
 
 /** 선택지나 카드 표시명 변경만으로 지출 수정 여부가 바뀌지 않게 한다. */
 internal fun ExpenseFormUiState.inputValues(): ExpenseFormUiState = copy(
-    availablePaymentMethods = emptyList(), amountError = null, paymentMethodRequired = false,
+    availablePaymentMethods = emptyList(), amountError = null, paymentMethodRequired = false, cardLoadFailed = false,
     paymentMethod = (paymentMethod as? PaymentMethod.Card)?.copy(name = "", issuer = "") ?: paymentMethod,
 )

@@ -11,18 +11,30 @@ class CardEditorViewModel(private val repository: CardRepository, private val ca
     private val _uiState = MutableStateFlow(CardEditorUiState(cardId = cardId, isLoading = cardId != null))
     val uiState = _uiState.asStateFlow()
 
-    init {
-        if (cardId != null) viewModelScope.launch {
-            val card = repository.observeCards().first().firstOrNull { it.id == cardId }
-            _uiState.update { it.copy(alias = card?.alias.orEmpty(), issuer = card?.issuer.orEmpty(),
-                isLoading = false, notFound = card == null) }
+    init { loadCard() }
+
+    private fun loadCard() {
+        if (cardId == null) return
+        _uiState.update { it.copy(isLoading = true, loadFailed = false, notFound = false) }
+        viewModelScope.launch {
+            when (val result = repository.observeCards().first()) {
+                is AppResult.Success -> {
+                    val card = result.data.firstOrNull { it.id == cardId }
+                    _uiState.update { it.copy(alias = card?.alias.orEmpty(), issuer = card?.issuer.orEmpty(),
+                        isLoading = false, notFound = card == null) }
+                }
+                is AppResult.Failure -> _uiState.update { it.copy(isLoading = false, loadFailed = true) }
+            }
         }
     }
 
     fun onIntent(intent: CardEditorUiIntent) {
         val state = _uiState.value
         if (state.isLoading || state.notFound || state.isSaving || state.saved) return
+        if (intent == CardEditorUiIntent.Retry) { loadCard(); return }
+        if (state.loadFailed) return
         when (intent) {
+            CardEditorUiIntent.Retry -> Unit
             is CardEditorUiIntent.AliasChanged -> _uiState.update {
                 it.copy(alias = intent.value, aliasRequired = it.aliasRequired && intent.value.isBlank(), saveFailed = false)
             }

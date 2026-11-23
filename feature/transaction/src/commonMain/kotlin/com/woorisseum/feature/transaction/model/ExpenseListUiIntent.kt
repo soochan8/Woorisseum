@@ -6,6 +6,7 @@ import kotlinx.datetime.YearMonth
 
 /** Screen이 전달하고 ViewModel이 처리하는 사용자 동작이다. */
 sealed interface ExpenseListUiIntent {
+    data object RetryCards : ExpenseListUiIntent
     data object OpenSearch : ExpenseListUiIntent
     data object CloseSearch : ExpenseListUiIntent
     data class SearchQueryChanged(val query: String) : ExpenseListUiIntent

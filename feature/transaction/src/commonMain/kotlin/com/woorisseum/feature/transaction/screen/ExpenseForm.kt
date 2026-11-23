@@ -88,6 +88,12 @@ internal fun ExpenseForm(
                 }
             }
             WoorisseumTextButton(onClick = onOpenCards) { Text(stringResource(Res.string.card_management_title)) }
+            if (state.cardLoadFailed) {
+                Text(stringResource(Res.string.card_load_failed), color = MaterialTheme.colorScheme.error)
+                WoorisseumTextButton(onClick = { onIntent(ExpenseFormUiIntent.RetryCards) }) {
+                    Text(stringResource(Res.string.card_retry))
+                }
+            }
             if (state.paymentMethodRequired) {
                 Text(
                     stringResource(Res.string.expense_payment_required),

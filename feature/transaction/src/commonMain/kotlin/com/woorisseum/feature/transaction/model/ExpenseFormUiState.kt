@@ -16,11 +16,13 @@ data class ExpenseFormUiState(
     val availablePaymentMethods: List<PaymentMethod> = listOf(PaymentMethod.Cash, PaymentMethod.BankTransfer),
     val amountError: ExpenseAmountInputError? = null,
     val paymentMethodRequired: Boolean = false,
+    val cardLoadFailed: Boolean = false,
 ) {
     val hasErrors: Boolean get() = amountError != null || paymentMethodRequired
 }
 
 sealed interface ExpenseFormUiIntent {
+    data object RetryCards : ExpenseFormUiIntent
     data class AmountChanged(val value: String) : ExpenseFormUiIntent
     data class MerchantChanged(val value: String) : ExpenseFormUiIntent
     data class MemoChanged(val value: String) : ExpenseFormUiIntent
@@ -31,6 +33,7 @@ sealed interface ExpenseFormUiIntent {
 
 /** 부수효과 없이 입력값만 전이한다. 제출·저장 정책은 각 ViewModel이 결정한다. */
 internal fun ExpenseFormUiState.changed(intent: ExpenseFormUiIntent): ExpenseFormUiState = when (intent) {
+    ExpenseFormUiIntent.RetryCards -> this
     is ExpenseFormUiIntent.AmountChanged -> copy(
         amountInput = intent.value,
         amountError = if (amountError == null) null else validateExpenseAmount(intent.value),

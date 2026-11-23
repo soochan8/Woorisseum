@@ -40,15 +40,26 @@ fun CardListScreen(
     CardScaffold(stringResource(Res.string.card_management_title), onBack,
         stringResource(Res.string.card_register_title), { onIntent(CardListUiIntent.AddCard) },
         modifier = modifier, enabled = state.deletingCardId == null) { padding ->
-        if (state.cards.isEmpty()) {
+        if (state.isLoading && state.cards.isEmpty()) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (state.cards.isEmpty()) {
             Column(Modifier.fillMaxSize().padding(padding).padding(24.dp),
                 verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                if (state.loadFailed) {
+                    CardLoadFailure { onIntent(CardListUiIntent.Retry) }
+                } else {
                 Text(stringResource(Res.string.card_empty_title), style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(Res.string.card_empty_description),
                     modifier = Modifier.padding(top = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         } else {
             LazyColumn(Modifier.fillMaxSize().padding(padding), state = listState, contentPadding = PaddingValues(24.dp)) {
+                if (state.loadFailed) item(key = "load-error") {
+                    CardLoadFailure { onIntent(CardListUiIntent.Retry) }
+                }
                 if (state.deleteFailed) item(key = "delete-error") {
                     Text(stringResource(Res.string.card_delete_failed), color = MaterialTheme.colorScheme.error)
                 }
@@ -100,13 +111,14 @@ fun CardEditorScreen(
             focus.clearFocus()
             keyboard?.hide()
             onIntent(CardEditorUiIntent.Save)
-        }, enabled = !state.isLoading && !state.notFound && !state.isSaving && !state.saved,
+        }, enabled = !state.isLoading && !state.notFound && !state.loadFailed && !state.isSaving && !state.saved,
         modifier = modifier,
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)) {
             when {
                 state.isLoading -> CircularProgressIndicator()
+                state.loadFailed -> CardLoadFailure { onIntent(CardEditorUiIntent.Retry) }
                 state.notFound -> Text(stringResource(Res.string.card_not_found))
                 else -> {
                     CardTextField(state.alias, { onIntent(CardEditorUiIntent.AliasChanged(it)) },
@@ -157,4 +169,13 @@ private fun CardScaffold(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(action) }
             }
         }, content = content)
+}
+
+/** 빈 목록과 조회 실패를 구분하고 실패한 구독을 명시적으로 다시 시작한다. */
+@Composable
+private fun CardLoadFailure(onRetry: () -> Unit) {
+    Column {
+        Text(stringResource(Res.string.card_load_failed), color = MaterialTheme.colorScheme.error)
+        WoorisseumTextButton(onClick = onRetry) { Text(stringResource(Res.string.card_retry)) }
+    }
 }

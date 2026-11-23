@@ -90,6 +90,12 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
                 )
             },
         )
+        if (state.cardLoadFailed) {
+            Text(stringResource(Res.string.card_load_failed), color = MaterialTheme.colorScheme.error)
+            WoorisseumTextButton(onClick = { onIntent(ExpenseListUiIntent.RetryCards) }) {
+                Text(stringResource(Res.string.card_retry))
+            }
+        }
         val hasFilters = state.filters.category != null || state.filters.paymentMethod != null ||
             if (state.isSearchOpen) state.searchPeriod.preset != ExpenseSearchPreset.ALL else state.filters.dateRange != null
         if (hasFilters) {

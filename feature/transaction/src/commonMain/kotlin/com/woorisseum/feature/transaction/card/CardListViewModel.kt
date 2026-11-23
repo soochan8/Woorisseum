@@ -6,20 +6,35 @@ import com.woorisseum.core.domain.transaction.card.CardRepository
 import com.woorisseum.core.domain.common.AppResult
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 class CardListViewModel(private val repository: CardRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(CardListUiState())
+    private val _uiState = MutableStateFlow(CardListUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
     private val _effects = MutableSharedFlow<CardListUiEffect>()
     val effects = _effects.asSharedFlow()
 
-    init {
-        viewModelScope.launch { repository.observeCards().collect { cards -> _uiState.update { it.copy(cards = cards) } } }
+    private var observation: Job? = null
+
+    init { observeCards() }
+
+    private fun observeCards() {
+        observation?.cancel()
+        _uiState.update { it.copy(isLoading = true, loadFailed = false) }
+        observation = viewModelScope.launch {
+            repository.observeCards().collect { result ->
+                _uiState.update { state -> when (result) {
+                    is AppResult.Success -> state.copy(cards = result.data, isLoading = false, loadFailed = false)
+                    is AppResult.Failure -> state.copy(isLoading = false, loadFailed = true)
+                } }
+            }
+        }
     }
 
     fun onIntent(intent: CardListUiIntent) {
         if (_uiState.value.deletingCardId != null) return
         when (intent) {
+            CardListUiIntent.Retry -> observeCards()
             CardListUiIntent.AddCard -> openEditor(null)
             is CardListUiIntent.EditCard -> openEditor(intent.cardId)
             is CardListUiIntent.DeleteCard -> {
