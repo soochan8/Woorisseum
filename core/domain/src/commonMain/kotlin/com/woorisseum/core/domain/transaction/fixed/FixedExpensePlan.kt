@@ -13,6 +13,8 @@ data class FixedExpensePlan(
     val billingDay: Int,
     val startMonth: YearMonth,
     val memo: String? = null,
+    val endMonthExclusive: YearMonth? = null,
+    val revision: Long = 0,
 ) {
     init {
         require(id.isNotBlank())
@@ -34,7 +36,8 @@ data class ScheduledFixedExpense(
 
 data class MonthlyFixedExpenseSummary(
     val items: List<ScheduledFixedExpense>,
-    val totalAmount: Long,
+    val totalAmount: Long?,
     // 납부 기록을 조회하지 못한 경우 0원으로 대체하지 않는다.
     val paidAmount: Long?,
+    val totalOverflow: Boolean = false,
 )

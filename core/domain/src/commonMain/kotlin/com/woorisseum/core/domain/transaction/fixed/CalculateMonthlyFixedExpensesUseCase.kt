@@ -13,18 +13,20 @@ class CalculateMonthlyFixedExpensesUseCase {
         require(plans.map { it.id }.distinct().size == plans.size) { "Duplicate fixed expense identifiers" }
         var total = 0L
         var paid = 0L
-        val items = plans.filter { month >= it.startMonth }.map { plan ->
-            require(plan.amount <= Long.MAX_VALUE - total) { "Fixed expense total exceeds Long range" }
-            total += plan.amount
+        var overflow = false
+        val items = plans.filter { month >= it.startMonth && (it.endMonthExclusive?.let { end -> month < end } != false) }.map { plan ->
+            if (plan.amount > Long.MAX_VALUE - total) overflow = true
+            else if (!overflow) total += plan.amount
             val status = when {
                 paidPlanIds == null -> FixedExpensePaymentStatus.UNKNOWN
                 plan.id in paidPlanIds -> FixedExpensePaymentStatus.PAID
                 else -> FixedExpensePaymentStatus.UNPAID
             }
-            if (status == FixedExpensePaymentStatus.PAID) paid += plan.amount
+            if (status == FixedExpensePaymentStatus.PAID && plan.amount <= Long.MAX_VALUE - paid) paid += plan.amount
             ScheduledFixedExpense(plan,
                 LocalDate(month.year, month.month, plan.billingDay.coerceAtMost(month.numberOfDays)), status)
         }.sortedWith(compareBy({ it.dueDate }, { it.plan.id }))
-        return MonthlyFixedExpenseSummary(items, total, if (paidPlanIds == null) null else paid)
+        return MonthlyFixedExpenseSummary(items, total.takeUnless { overflow },
+            if (paidPlanIds == null || overflow) null else paid, totalOverflow = overflow)
     }
 }
