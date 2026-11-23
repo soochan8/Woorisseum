@@ -16,7 +16,7 @@ internal fun ExpenseListUiState.withExpenseResults(expenses: List<Expense>): Exp
     val range = if (isSearchOpen) searchPeriod.range else filters.dateRange
     val criteria = ExpenseSearch(if (isSearchOpen) null else month, if (isSearchOpen) searchQuery else "",
         filters.category, range?.start, range?.endInclusive, payment)
-    val visible = expenses.filter(criteria::matches).sortedByDescending { it.date }
+    val visible = expenses.filter(criteria::matches).sortedWith(compareByDescending<Expense> { it.date }.thenByDescending { it.id })
     val monthTotal = monthItems.totalOrNull()
     return copy(
         isExpenseSourceReady = true,

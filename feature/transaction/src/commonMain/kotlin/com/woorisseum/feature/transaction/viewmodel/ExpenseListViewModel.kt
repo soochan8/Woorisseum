@@ -4,6 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.woorisseum.core.domain.transaction.card.CardRepository
 import com.woorisseum.core.domain.transaction.model.Expense
+import com.woorisseum.core.domain.transaction.repository.ExpenseRepository
+import com.woorisseum.core.domain.transaction.search.ExpenseSearch
+import com.woorisseum.feature.transaction.model.toExpenseOperationError
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import com.woorisseum.feature.transaction.model.ExpenseSearchPeriod
 import com.woorisseum.feature.transaction.model.ExpenseSearchPreset
 import com.woorisseum.feature.transaction.model.toPeriod
@@ -31,16 +38,28 @@ import kotlinx.datetime.minusMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.plusMonth
 
-/** 월·분류 선택과 이동 요청을 처리한다. 데이터 조회는 Repository 연결 단계에서 추가한다. */
+/** DB 원본을 관찰하고 월·기간·필터에 맞는 표시 상태를 만든다. */
 class ExpenseListViewModel(
     initialMonth: YearMonth,
     private val cardRepository: CardRepository,
-    initialExpenses: List<Expense>? = null,
+    private val repository: ExpenseRepository,
     private val today: () -> LocalDate = { Clock.System.todayIn(TimeZone.currentSystemDefault()) },
 ) : ViewModel() {
-    // 운영 DI는 null이다. Preview·검증에서만 목록을 주입하며 실제 조회 연결은 별도 작업이다.
-    private val expenses = initialExpenses?.toList()
-    private fun present(state: ExpenseListUiState) = expenses?.let { state.withExpenseResults(it) } ?: state
+    private var cached: Pair<ExpenseSearch, AppResult<List<Expense>>>? = null
+    private fun query(state: ExpenseListUiState): ExpenseSearch = if (state.isSearchOpen) {
+        ExpenseSearch(start = state.searchPeriod.range?.start, endInclusive = state.searchPeriod.range?.endInclusive)
+    } else ExpenseSearch(month = state.month)
+
+    private fun present(state: ExpenseListUiState): ExpenseListUiState {
+        val result = cached?.takeIf { it.first == query(state) }?.second
+        return when (result) {
+            null -> state.copy(isLoading = true, loadError = null, isExpenseSourceReady = false,
+                dayGroups = emptyList(), totalAmountText = "", expenseCount = 0, totalAmountOverflow = false)
+            is AppResult.Success -> state.withExpenseResults(result.data).copy(isLoading = false, loadError = null)
+            is AppResult.Failure -> state.copy(isLoading = false, loadError = result.error.toExpenseOperationError(),
+                isExpenseSourceReady = false, dayGroups = emptyList(), totalAmountText = "", expenseCount = 0, totalAmountOverflow = false)
+        }
+    }
     private val _uiState = MutableStateFlow(present(emptyMonthState(initialMonth)))
     val uiState = _uiState.asStateFlow()
 
@@ -50,7 +69,25 @@ class ExpenseListViewModel(
 
     private var cardObservation: Job? = null
 
-    init { observeCards() }
+    private var expenseObservation: Job? = null
+
+    init { observeCards(); observeExpenses() }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun observeExpenses() {
+        expenseObservation?.cancel()
+        cached = null
+        _uiState.update(::present)
+        expenseObservation = viewModelScope.launch {
+            _uiState.map(::query).distinctUntilChanged().flatMapLatest { criteria ->
+                repository.observeExpenses(criteria).map { criteria to it }
+            }.collect { (criteria, result) ->
+                if (criteria != query(_uiState.value)) return@collect
+                cached = criteria to result
+                _uiState.update(::present)
+            }
+        }
+    }
 
     private fun observeCards() {
         cardObservation?.cancel()
@@ -74,6 +111,7 @@ class ExpenseListViewModel(
 
     fun onIntent(intent: ExpenseListUiIntent) {
         when (intent) {
+            ExpenseListUiIntent.RetryExpenses -> observeExpenses()
             ExpenseListUiIntent.RetryCards -> observeCards()
             ExpenseListUiIntent.OpenSearch -> _uiState.update { if (it.isSearchOpen) it else present(it.copy(isSearchOpen = true, searchPeriod = ExpenseSearchPeriod())) }
             ExpenseListUiIntent.CloseSearch -> _uiState.update { present(it.copy(isSearchOpen = false, searchQuery = "", searchPeriod = ExpenseSearchPeriod())) }

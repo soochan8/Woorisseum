@@ -6,11 +6,9 @@ import com.woorisseum.core.domain.transaction.fixed.CalculateMonthlyFixedExpense
 import com.woorisseum.core.domain.budget.usecase.CalculateBudgetSummaryUseCase
 import com.woorisseum.feature.shopping.di.shoppingModule
 import com.woorisseum.core.data.di.dataModule
-import com.woorisseum.core.data.di.previewDataModule
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import org.koin.dsl.koinConfiguration
 
 private val domainModule = module {
     factory { CalculateMonthlyFixedExpensesUseCase() }
@@ -22,9 +20,4 @@ private val commonModules = listOf(domainModule, transactionModule, budgetModule
 
 internal fun startAppKoin(platformModule: Module) = startKoin {
     modules(commonModules + listOf(platformModule, dataModule))
-}
-
-/** Preview는 실제 DB와 전역 앱 DI를 시작하지 않는다. */
-internal val previewConfiguration = koinConfiguration {
-    modules(commonModules + previewDataModule)
 }

@@ -49,7 +49,7 @@ fun ExpenseEntryScreen(
             WoorisseumTopAppBar(
                 title = { Text(stringResource(Res.string.expense_entry_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    WoorisseumTextButton(onClick = onBack) { Text(stringResource(Res.string.expense_back)) }
+                    WoorisseumTextButton(onClick = onBack, enabled = !state.isSaving) { Text(stringResource(Res.string.expense_back)) }
                 },
             )
         },
@@ -61,8 +61,9 @@ fun ExpenseEntryScreen(
                         keyboardController?.hide()
                         onIntent(ExpenseEntryUiIntent.Submit)
                     },
+                    enabled = !state.isSaving && !state.saved,
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text(stringResource(Res.string.expense_save)) }
+                ) { Text(stringResource(if (state.isSaving) Res.string.expense_saving else Res.string.expense_save)) }
             }
         },
     ) { padding ->
@@ -71,13 +72,9 @@ fun ExpenseEntryScreen(
                 .verticalScroll(rememberScrollState()).padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            ExpenseForm(state.form, { onIntent(ExpenseEntryUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards)
-            if (state.showStorageUnavailable) {
-                Text(
-                    stringResource(Res.string.expense_storage_unavailable),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+            ExpenseForm(state.form, { onIntent(ExpenseEntryUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards, enabled = !state.isSaving && !state.saved)
+            state.saveError?.let { error ->
+                Text(expenseSaveErrorText(error), color = MaterialTheme.colorScheme.error)
             }
         }
     }

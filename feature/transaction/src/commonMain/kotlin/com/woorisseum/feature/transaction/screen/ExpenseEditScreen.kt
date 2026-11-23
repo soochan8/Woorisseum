@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -27,6 +27,7 @@ fun ExpenseEditScreen(
     modifier: Modifier = Modifier,
     onOpenCards: () -> Unit = {},
 ) {
+    var confirmReload by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     Scaffold(
@@ -37,7 +38,7 @@ fun ExpenseEditScreen(
             WoorisseumTopAppBar(
                 title = { Text(stringResource(Res.string.expense_edit_title), style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    WoorisseumTextButton(onClick = { onIntent(ExpenseEditUiIntent.Cancel) }) {
+                    WoorisseumTextButton(onClick = { onIntent(ExpenseEditUiIntent.Cancel) }, enabled = !state.isSaving) {
                         Text(stringResource(Res.string.expense_cancel))
                     }
                 },
@@ -46,29 +47,48 @@ fun ExpenseEditScreen(
         bottomBar = {
             WoorisseumBottomActionBar {
                 WoorisseumPrimaryButton(
-                    enabled = state.form != null && state.hasChanges,
+                    enabled = state.form != null && state.hasChanges && !state.isLoading && !state.isSaving && !state.saved &&
+                        state.loadError == null && state.saveError != ExpenseOperationError.CONFLICT && state.saveError != ExpenseOperationError.NOT_FOUND,
                     onClick = {
                         focusManager.clearFocus()
                         keyboard?.hide()
                         onIntent(ExpenseEditUiIntent.Submit)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text(stringResource(Res.string.expense_edit_submit)) }
+                ) { Text(stringResource(if (state.isSaving) Res.string.expense_saving else Res.string.expense_edit_submit)) }
             }
         },
     ) { padding ->
         val form = state.form
-        if (form == null) {
-            ExpenseLookupUnavailable(Modifier.fillMaxSize().padding(padding))
+        if (form == null || state.isLoading || state.loadError != null) {
+            ExpenseOperationStatus(state.isLoading, state.loadError,
+                { onIntent(ExpenseEditUiIntent.Reload) }, Modifier.fillMaxSize().padding(padding))
         } else {
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())
                 .padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                ExpenseForm(form, { onIntent(ExpenseEditUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards)
-                Text(stringResource(if (state.showStorageUnavailable)
-                    Res.string.expense_edit_storage_unavailable else Res.string.expense_edit_notice),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+                ExpenseForm(form, { onIntent(ExpenseEditUiIntent.FormChanged(it)) }, onOpenCards = onOpenCards, enabled = !state.isSaving && !state.saved)
+                Text(stringResource(Res.string.expense_edit_notice), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                state.saveError?.let { error ->
+                    Text(expenseSaveErrorText(error), color = MaterialTheme.colorScheme.error)
+                    if (error == ExpenseOperationError.CONFLICT) {
+                        WoorisseumTextButton(onClick = { confirmReload = true }) {
+                            Text(stringResource(Res.string.expense_reload_latest))
+                        }
+                    }
+                }
             }
         }
     }
+    if (confirmReload) AlertDialog(
+        onDismissRequest = { confirmReload = false },
+        title = { Text(stringResource(Res.string.expense_reload_latest)) },
+        text = { Text(stringResource(Res.string.expense_reload_confirm)) },
+        confirmButton = { WoorisseumTextButton(onClick = {
+            confirmReload = false; onIntent(ExpenseEditUiIntent.Reload)
+        }) { Text(stringResource(Res.string.expense_reload_latest)) } },
+        dismissButton = { WoorisseumTextButton(onClick = { confirmReload = false }) {
+            Text(stringResource(Res.string.expense_cancel))
+        } },
+    )
 }

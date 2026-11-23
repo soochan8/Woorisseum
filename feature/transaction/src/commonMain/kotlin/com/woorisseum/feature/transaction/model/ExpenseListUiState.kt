@@ -11,8 +11,10 @@ data class ExpenseListUiState(
     val isSearchOpen: Boolean = false,
     val searchQuery: String = "",
     val searchPeriod: ExpenseSearchPeriod = ExpenseSearchPeriod(),
-    // null 저장소를 빈 조회 성공으로 취급하지 않는다. 연결 전 검색은 준비 상태로 표시한다.
+    // 로딩·실패를 빈 조회 성공과 구분한다.
     val isExpenseSourceReady: Boolean = false,
+    val isLoading: Boolean = false,
+    val loadError: ExpenseOperationError? = null,
     val totalAmountText: String = "0",
     val totalAmountOverflow: Boolean = false,
     val expenseCount: Int = 0,

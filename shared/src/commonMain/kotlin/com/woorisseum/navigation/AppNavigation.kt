@@ -31,6 +31,7 @@ import com.woorisseum.feature.transaction.fixed.FixedExpenseListRoute
 import com.woorisseum.feature.transaction.screen.*
 import com.woorisseum.resources.*
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
 import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
@@ -123,6 +124,11 @@ internal fun AppNavigation() {
             }
         }
     }
+    val onExpenseSaved: (LocalDate) -> Unit = { date ->
+        navController.getBackStackEntry<ExpenseListDestination>().savedStateHandle[REQUESTED_EXPENSE_MONTH] =
+            YearMonth(date.year, date.month).toString()
+        navigateBack()
+    }
     NavHost(navController, startDestination = ExpenseListDestination, route = AppGraph::class,
         modifier = Modifier.fillMaxSize().clipToBounds(),
         // 탭 화면은 자체 Scaffold를 가지므로 하위 화면 전환 중에도 높이가 바뀌지 않는다.
@@ -211,11 +217,11 @@ internal fun AppNavigation() {
         }
         composable<ExpenseEditDestination> { entry ->
             ExpenseEditRoute(expenseId = entry.toRoute<ExpenseEditDestination>().expenseId,
-                onBack = navigateBack,
+                onBack = navigateBack, onSaved = onExpenseSaved,
                 onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
         }
         composable<ExpenseEntryDestination> {
-            ExpenseEntryRoute(onBack = navigateBack,
+            ExpenseEntryRoute(onBack = navigateBack, onSaved = onExpenseSaved,
                 onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } })
         }
         composable<CardListDestination> {

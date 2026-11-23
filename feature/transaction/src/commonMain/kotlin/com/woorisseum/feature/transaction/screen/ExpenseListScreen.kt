@@ -105,7 +105,12 @@ fun ExpenseListScreen(
                 Text(stringResource(Res.string.expense_search_result_count, state.dayGroups.sumOf { it.expenses.size }),
                     Modifier.padding(horizontal = WoorisseumSpacing.screenHorizontal, vertical = 12.dp), style = MaterialTheme.typography.labelLarge)
             }
-            if (state.dayGroups.isEmpty()) {
+            if (state.isLoading || state.loadError != null) {
+                item(key = "query-status") {
+                    ExpenseOperationStatus(state.isLoading, state.loadError,
+                        { onIntent(ExpenseListUiIntent.RetryExpenses) }, Modifier.fillParentMaxHeight(0.45f))
+                }
+            } else if (state.dayGroups.isEmpty()) {
                 item(key = "empty", contentType = "empty") {
                     when {
                         state.isSearchOpen && !state.isExpenseSourceReady -> SearchEmptyContent(
@@ -202,7 +207,9 @@ private fun ExpenseHeader(
                 modifier = Modifier.padding(top = 8.dp),
             )
             val currency = stringResource(Res.string.expense_currency_won)
-            if (state.totalAmountOverflow) Text(stringResource(Res.string.expense_total_overflow),
+            if (state.isLoading || state.loadError != null) Text(stringResource(Res.string.expense_amount_pending),
+                style = MaterialTheme.typography.displaySmall, modifier = Modifier.padding(top = 4.dp))
+            else if (state.totalAmountOverflow) Text(stringResource(Res.string.expense_total_overflow),
                 style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 4.dp))
             else Text(
                 text = buildAnnotatedString {
@@ -219,7 +226,8 @@ private fun ExpenseHeader(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    text = stringResource(Res.string.expense_count, state.expenseCount),
+                    text = if (state.isLoading || state.loadError != null) stringResource(Res.string.expense_amount_pending)
+                        else stringResource(Res.string.expense_count, state.expenseCount),
                     modifier = Modifier.weight(1f),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.labelMedium,

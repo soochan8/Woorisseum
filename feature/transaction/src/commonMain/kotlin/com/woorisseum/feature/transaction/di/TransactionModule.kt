@@ -21,13 +21,13 @@ val transactionModule = module {
     viewModel { parameters -> CardEditorViewModel(repository = get(), cardId = parameters.getOrNull<String>()) }
     viewModel { parameters -> FixedExpenseListViewModel(initialMonth = parameters.get<YearMonth>(), calculateMonthly = get()) }
     viewModel { parameters -> FixedExpenseEditorViewModel(initialMonth = parameters.get<YearMonth>(), planId = parameters.getOrNull<String>()) }
-    viewModel { parameters -> ExpenseDetailViewModel(expenseId = parameters.get<String>()) }
-    viewModel { parameters -> ExpenseEditViewModel(expenseId = parameters.get<String>(), cardRepository = get()) }
+    viewModel { parameters -> ExpenseDetailViewModel(expenseId = parameters.get<String>(), repository = get()) }
+    viewModel { parameters -> ExpenseEditViewModel(expenseId = parameters.get<String>(), cardRepository = get(), repository = get()) }
     viewModel {
-        ExpenseEntryViewModel(initialDate = Clock.System.todayIn(TimeZone.currentSystemDefault()), cardRepository = get())
+        ExpenseEntryViewModel(initialDate = Clock.System.todayIn(TimeZone.currentSystemDefault()), cardRepository = get(), repository = get())
     }
     viewModel { parameters ->
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-        ExpenseListViewModel(initialMonth = parameters.getOrNull<YearMonth>() ?: YearMonth(today.year, today.month), cardRepository = get())
+        ExpenseListViewModel(initialMonth = parameters.getOrNull<YearMonth>() ?: YearMonth(today.year, today.month), cardRepository = get(), repository = get())
     }
 }

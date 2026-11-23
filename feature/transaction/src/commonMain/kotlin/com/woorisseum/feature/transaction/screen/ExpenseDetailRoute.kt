@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.woorisseum.feature.transaction.model.ExpenseDetailUiEffect
+import com.woorisseum.feature.transaction.model.ExpenseDetailUiIntent
 import com.woorisseum.feature.transaction.viewmodel.ExpenseDetailViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -25,6 +26,7 @@ fun ExpenseDetailRoute(
     val currentOnEdit by rememberUpdatedState(onEdit)
     LaunchedEffect(viewModel, lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.onIntent(ExpenseDetailUiIntent.Refresh)
             viewModel.effects.collect { effect ->
                 when (effect) {
                     is ExpenseDetailUiEffect.NavigateToEdit -> currentOnEdit(effect.expenseId)

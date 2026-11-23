@@ -14,9 +14,10 @@ import org.jetbrains.compose.resources.stringResource
 
 /** 실제 지출·고정지출 계획이 공유하는 금액 입력 UI다. 검증 결과는 부모가 전달한다. */
 @Composable
-internal fun ExpenseAmountInput(value: String, error: ExpenseAmountInputError?, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
+internal fun ExpenseAmountInput(value: String, error: ExpenseAmountInputError?, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     WoorisseumTextField(
         value = value,
+        enabled = enabled,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
         label = { Text(stringResource(Res.string.expense_amount_label)) },
@@ -31,9 +32,10 @@ internal fun ExpenseAmountInput(value: String, error: ExpenseAmountInputError?, 
 }
 
 @Composable
-internal fun ExpenseMemoInput(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
+internal fun ExpenseMemoInput(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     WoorisseumTextField(
         value = value,
+        enabled = enabled,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
         label = { Text(stringResource(Res.string.expense_memo_label)) },

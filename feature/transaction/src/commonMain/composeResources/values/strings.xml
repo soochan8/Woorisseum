@@ -51,7 +51,7 @@
     <string name="expense_lookup_unavailable_title">조회 연결 준비 중이에요</string>
     <string name="expense_lookup_unavailable_description">지출 조회 기능이 연결되면 내역을 확인하고 수정할 수 있어요.</string>
     <string name="expense_edit_storage_unavailable">입력은 확인했어요. 아직 수정 기능이 연결되지 않아 변경 내용은 저장되지 않았어요.</string>
-    <string name="expense_edit_notice">실제 저장은 연결 후 제공돼요. 취소하면 변경 내용은 반영되지 않아요.</string>
+    <string name="expense_edit_notice">변경 내용을 저장하면 지출 내역에 반영돼요.</string>
     <string name="expense_memo_label">메모 (선택)</string>
     <string name="expense_memo_title">메모</string>
     <string name="expense_memo_empty">남긴 메모가 없어요</string>
@@ -133,4 +133,14 @@
     <string name="expense_search_day_full">%1$d년 %2$d월 %3$d일</string>
     <string name="card_load_failed">카드 목록을 불러오지 못했어요.</string>
     <string name="card_retry">다시 불러오기</string>
+    <string name="expense_saving">저장 중…</string>
+    <string name="expense_db_failed">지출을 불러오지 못했어요. 다시 시도해 주세요.</string>
+    <string name="expense_not_found">이 지출을 찾을 수 없어요. 목록에서 다시 확인해 주세요.</string>
+    <string name="expense_edit_conflict">다른 변경이 먼저 반영됐어요. 입력은 유지했어요. 최신 내역을 확인해 주세요.</string>
+    <string name="expense_invalid_input">금액과 결제수단을 확인해 주세요. 삭제된 카드는 새로 선택할 수 없어요.</string>
+    <string name="expense_retry">다시 불러오기</string>
+    <string name="expense_reload_latest">최신 내역 불러오기</string>
+    <string name="expense_reload_confirm">현재 입력을 버리고 최신 내역으로 바꿀까요?</string>
+    <string name="expense_save_failed">저장하지 못했어요. 입력은 유지했으니 다시 시도해 주세요.</string>
+    <string name="expense_amount_pending">—</string>
 </resources>

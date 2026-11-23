@@ -45,15 +45,16 @@ fun ExpenseDetailScreen(
             WoorisseumBottomActionBar {
                 WoorisseumPrimaryButton(
                     onClick = { onIntent(ExpenseDetailUiIntent.Edit) },
-                    enabled = state.detail != null,
+                    enabled = state.detail != null && !state.isLoading && state.loadError == null,
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(stringResource(Res.string.expense_edit_action)) }
             }
         },
     ) { padding ->
         val detail = state.detail
-        if (detail == null) {
-            ExpenseLookupUnavailable(Modifier.fillMaxSize().padding(padding))
+        if (detail == null || state.isLoading || state.loadError != null) {
+            ExpenseOperationStatus(state.isLoading, state.loadError,
+                { onIntent(ExpenseDetailUiIntent.Refresh) }, Modifier.fillMaxSize().padding(padding))
         } else {
             Column(
                 Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())

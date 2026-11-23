@@ -61,3 +61,10 @@ internal fun validateExpenseAmount(input: String): ExpenseAmountInputError? {
 }
 
 enum class ExpenseAmountInputError { REQUIRED, INVALID_INTEGER, OUT_OF_RANGE, NOT_POSITIVE }
+
+/** 검증을 통과한 입력을 업무 입력 모델로 변환한다. 저장·상태 전이는 하지 않는다. */
+internal fun ExpenseFormUiState.toNewExpense() = com.woorisseum.core.domain.transaction.model.NewExpense(
+    amount = requireNotNull(amountInput.toLongOrNull()), date = date,
+    merchant = merchantInput.trim().takeIf { it.isNotEmpty() }, category = category,
+    paymentMethod = requireNotNull(paymentMethod), memo = memoInput.trim().takeIf { it.isNotEmpty() },
+)

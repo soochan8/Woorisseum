@@ -40,13 +40,14 @@ internal fun ExpenseForm(
     onIntent: (ExpenseFormUiIntent) -> Unit,
     modifier: Modifier = Modifier,
     onOpenCards: () -> Unit = {},
+    enabled: Boolean = true,
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        ExpenseAmountInput(state.amountInput, state.amountError, { onIntent(ExpenseFormUiIntent.AmountChanged(it)) })
+        ExpenseAmountInput(state.amountInput, state.amountError, { onIntent(ExpenseFormUiIntent.AmountChanged(it)) }, enabled = enabled)
         Column {
             Text(stringResource(Res.string.expense_date_label), style = MaterialTheme.typography.labelLarge)
-            WoorisseumTextButton(onClick = { showDatePicker = true }) {
+            WoorisseumTextButton(onClick = { showDatePicker = true }, enabled = enabled) {
                 Text(stringResource(
                     Res.string.expense_date_value, state.date.year, state.date.month.number, state.date.day,
                 ))
@@ -54,6 +55,7 @@ internal fun ExpenseForm(
         }
         WoorisseumTextField(
             value = state.merchantInput,
+            enabled = enabled,
             onValueChange = { onIntent(ExpenseFormUiIntent.MerchantChanged(it)) },
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(Res.string.expense_merchant_label)) },
@@ -65,6 +67,7 @@ internal fun ExpenseForm(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ExpenseCategory.entries.forEach { category ->
                     WoorisseumFilterChip(
+                        enabled = enabled,
                         selected = state.category == category,
                         onClick = { onIntent(ExpenseFormUiIntent.CategorySelected(category)) },
                         label = { Text(stringResource(when (category) {
@@ -81,16 +84,17 @@ internal fun ExpenseForm(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 state.availablePaymentMethods.forEach { method ->
                     WoorisseumFilterChip(
+                        enabled = enabled,
                         selected = state.paymentMethod == method,
                         onClick = { onIntent(ExpenseFormUiIntent.PaymentMethodSelected(method)) },
                         label = { Text(paymentLabel(method)) },
                     )
                 }
             }
-            WoorisseumTextButton(onClick = onOpenCards) { Text(stringResource(Res.string.card_management_title)) }
+            WoorisseumTextButton(onClick = onOpenCards, enabled = enabled) { Text(stringResource(Res.string.card_management_title)) }
             if (state.cardLoadFailed) {
                 Text(stringResource(Res.string.card_load_failed), color = MaterialTheme.colorScheme.error)
-                WoorisseumTextButton(onClick = { onIntent(ExpenseFormUiIntent.RetryCards) }) {
+                WoorisseumTextButton(onClick = { onIntent(ExpenseFormUiIntent.RetryCards) }, enabled = enabled) {
                     Text(stringResource(Res.string.card_retry))
                 }
             }
@@ -102,7 +106,7 @@ internal fun ExpenseForm(
                 )
             }
         }
-        ExpenseMemoInput(state.memoInput, { onIntent(ExpenseFormUiIntent.MemoChanged(it)) })
+        ExpenseMemoInput(state.memoInput, { onIntent(ExpenseFormUiIntent.MemoChanged(it)) }, enabled = enabled)
     }
     if (showDatePicker) {
         ExpenseDateDialog(

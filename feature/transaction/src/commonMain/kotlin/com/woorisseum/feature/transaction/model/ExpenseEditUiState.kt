@@ -1,15 +1,20 @@
 package com.woorisseum.feature.transaction.model
 
-/** 원본을 불러올 수 있을 때만 수정 폼을 노출한다. 제출 안내는 저장 성공을 의미하지 않는다. */
+/** 조회한 원본과 입력 초안을 분리하며 실패해도 입력을 유지한다. */
 data class ExpenseEditUiState(
     val expenseId: String,
     val form: ExpenseFormUiState? = null,
     val hasChanges: Boolean = false,
-    val showStorageUnavailable: Boolean = false,
+    val isLoading: Boolean = false,
+    val loadError: ExpenseOperationError? = null,
+    val isSaving: Boolean = false,
+    val saved: Boolean = false,
+    val saveError: ExpenseOperationError? = null,
 )
 
 sealed interface ExpenseEditUiIntent {
     data class FormChanged(val intent: ExpenseFormUiIntent) : ExpenseEditUiIntent
+    data object Reload : ExpenseEditUiIntent
     data object Submit : ExpenseEditUiIntent
     data object Cancel : ExpenseEditUiIntent
 }

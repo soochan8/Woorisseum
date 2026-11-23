@@ -3,6 +3,7 @@ package com.woorisseum.feature.transaction.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.woorisseum.core.domain.transaction.card.CardRepository
+import com.woorisseum.core.domain.transaction.repository.ExpenseRepository
 import com.woorisseum.feature.transaction.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,8 +13,8 @@ import kotlinx.coroutines.Job
 import com.woorisseum.core.domain.common.AppResult
 import kotlinx.datetime.LocalDate
 
-/** 입력 전이를 소유한다. 저장소 연결 전에는 성공·화면 이동을 발생시키지 않는다. */
-class ExpenseEntryViewModel(initialDate: LocalDate, private val cardRepository: CardRepository) : ViewModel() {
+/** 입력 검증과 저장 상태를 소유하며 DB 반영이 끝난 뒤 성공을 남긴다. */
+class ExpenseEntryViewModel(initialDate: LocalDate, private val cardRepository: CardRepository, private val repository: ExpenseRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ExpenseEntryUiState(ExpenseFormUiState(date = initialDate)))
     val uiState = _uiState.asStateFlow()
 
@@ -36,18 +37,24 @@ class ExpenseEntryViewModel(initialDate: LocalDate, private val cardRepository: 
     }
 
     fun onIntent(intent: ExpenseEntryUiIntent) {
-        if (intent is ExpenseEntryUiIntent.FormChanged && intent.intent == ExpenseFormUiIntent.RetryCards) {
-            observeCards()
-            return
-        }
-        _uiState.update { state ->
-            when (intent) {
-                is ExpenseEntryUiIntent.FormChanged -> state.copy(
-                    form = state.form.changed(intent.intent), showStorageUnavailable = false,
-                )
-                ExpenseEntryUiIntent.Submit -> {
-                    val form = state.form.validated()
-                    state.copy(form = form, showStorageUnavailable = !form.hasErrors)
+        val state = _uiState.value
+        if (state.isSaving || state.saved) return
+        when (intent) {
+            is ExpenseEntryUiIntent.FormChanged -> {
+                if (intent.intent == ExpenseFormUiIntent.RetryCards) observeCards()
+                else _uiState.update { it.copy(form = it.form.changed(intent.intent), saveError = null) }
+            }
+            ExpenseEntryUiIntent.Submit -> {
+                val form = state.form.validated()
+                _uiState.value = state.copy(form = form, isSaving = !form.hasErrors, saveError = null)
+                if (form.hasErrors) return
+                val input = form.toNewExpense()
+                viewModelScope.launch {
+                    when (val result = repository.addExpense(input)) {
+                        is AppResult.Success -> _uiState.update { it.copy(isSaving = false, saved = true) }
+                        is AppResult.Failure -> _uiState.update { it.copy(isSaving = false,
+                            saveError = result.error.toExpenseOperationError()) }
+                    }
                 }
             }
         }
