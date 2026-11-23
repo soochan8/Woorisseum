@@ -19,4 +19,6 @@ data class Expense(
     val paymentMethod: PaymentMethod,
     /** 선택 입력 메모. 미입력은 null로 전달한다. */
     val memo: String? = null,
+    /** 저장 시 충돌 검사용 버전. 수정할 때 조회 당시 값을 그대로 전달한다. */
+    val revision: Long = 0,
 )

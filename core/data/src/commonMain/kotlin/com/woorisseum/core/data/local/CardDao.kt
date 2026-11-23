@@ -10,6 +10,9 @@ internal interface CardDao {
     @Query("SELECT * FROM cards ORDER BY registrationOrder ASC")
     fun observeCards(): Flow<List<CardEntity>>
 
+    @Query("SELECT * FROM cards WHERE id = :id")
+    suspend fun findById(id: String): CardEntity?
+
     // 기본 ABORT 정책: ID 충돌 시 기존 카드를 덮어쓰지 않는다.
     @Insert
     suspend fun insert(card: CardEntity)
