@@ -8,11 +8,14 @@ import com.woorisseum.core.domain.transaction.repository.ExpenseRepository
 import com.woorisseum.core.data.transaction.card.InMemoryCardRepository
 import com.woorisseum.core.data.transaction.card.LocalCardRepository
 import com.woorisseum.core.domain.transaction.card.CardRepository
+import com.woorisseum.core.domain.shopping.ShoppingRepository
+import com.woorisseum.core.data.shopping.LocalShoppingRepository
 import org.koin.dsl.module
 import com.woorisseum.core.data.transaction.fixed.LocalFixedExpenseRepository
 import com.woorisseum.core.domain.transaction.fixed.FixedExpenseRepository
 
 val dataModule = module {
+    single<ShoppingRepository> { LocalShoppingRepository(get()) }
     single<FixedExpenseRepository> { LocalFixedExpenseRepository(get()) }
     single<BudgetRepository> { LocalBudgetRepository(get<WoorisseumDatabase>().budgetDao()) }
     single<ExpenseRepository> { LocalExpenseRepository(get()) }

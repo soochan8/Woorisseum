@@ -8,6 +8,7 @@ data class ShoppingItem(
     val memo: String? = null,
     val purchased: Boolean = false,
     val category: ShoppingCategory? = null,
+    val revision: Long = 0,
 ) {
     init {
         require(id.isNotBlank())

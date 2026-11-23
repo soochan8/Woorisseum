@@ -19,7 +19,7 @@ value class ShoppingCategory(val id: String) {
 }
 
 /** 편집 가능한 이름이다. 기본 분류의 번역은 feature에서 주입한다. */
-data class ShoppingCategoryDefinition(val category: ShoppingCategory, val name: String) {
+data class ShoppingCategoryDefinition(val category: ShoppingCategory, val name: String, val revision: Long = 0) {
     init { require(name.isNotBlank() && name == name.trim()) }
 }
 
@@ -36,7 +36,7 @@ fun validateShoppingCategoryName(
     return when {
         normalized.isEmpty() -> ShoppingCategoryNameError.REQUIRED
         reservedNames.any { it.equals(normalized, ignoreCase = true) } -> ShoppingCategoryNameError.RESERVED
-        categories.any { it.category != excluding && it.name.equals(normalized, ignoreCase = true) } -> ShoppingCategoryNameError.DUPLICATE
+        categories.any { it.category != excluding && it.name.lowercase() == normalized.lowercase() } -> ShoppingCategoryNameError.DUPLICATE
         else -> null
     }
 }

@@ -9,14 +9,15 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-/** 고정지출 이력을 추가하며 기존 카드·지출·예산을 보존한다. */
+/** 현재 장보기 목록을 추가하며 기존 카드·지출·예산·고정지출을 보존한다. */
 @Database(
-    entities = [CardEntity::class, ExpenseEntity::class, BudgetEntity::class, FixedExpenseEntity::class, FixedExpenseVersionEntity::class],
-    version = 3, exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+    entities = [CardEntity::class, ExpenseEntity::class, BudgetEntity::class, FixedExpenseEntity::class, FixedExpenseVersionEntity::class, ShoppingSettingsEntity::class, ShoppingCategoryEntity::class, ShoppingItemEntity::class],
+    version = 4, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
 )
 @ConstructedBy(WoorisseumDatabaseConstructor::class)
 internal abstract class WoorisseumDatabase : RoomDatabase() {
+    abstract fun shoppingDao(): ShoppingDao
     abstract fun fixedExpenseDao(): FixedExpenseDao
     abstract fun budgetDao(): BudgetDao
     abstract fun cardDao(): CardDao
