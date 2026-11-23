@@ -21,8 +21,14 @@ serialization = "1.12.0"
 datetime = "0.8.0"
 koin = "4.2.2"
 navigation = "2.9.2"
+room = "3.0.3"
+sqlite = "2.7.1"
+ksp = "2.3.14"
 
 [libraries]
+androidx-room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -60,6 +66,8 @@ gradle-composeCompiler = { module = "org.jetbrains.kotlin:compose-compiler-gradl
 gradle-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 
 [plugins]
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room3", version.ref = "room" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }

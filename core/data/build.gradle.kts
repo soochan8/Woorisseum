@@ -1,6 +1,8 @@
 plugins {
     id("woorisseum.kmp.library")
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 kotlin {
@@ -12,7 +14,8 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.core)
-            // Firebase and local storage will be added during backend integration.
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -20,4 +23,15 @@ kotlin {
             implementation(libs.koin.test)
         }
     }
+}
+
+// 각 플랫폼의 actual DB 구현을 KSP로 생성한다.
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+}
+
+room3 {
+    schemaDirectory("$projectDir/schemas")
 }
