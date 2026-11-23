@@ -3,9 +3,33 @@ package com.woorisseum.core.domain.budget.usecase
 import com.woorisseum.core.domain.budget.model.BudgetCategorySummary
 import com.woorisseum.core.domain.budget.model.BudgetSummary
 import com.woorisseum.core.domain.transaction.model.ExpenseCategory
+import com.woorisseum.core.domain.transaction.model.Expense
 
 /** 전달된 분류별 합계로 예산 현황을 계산한다. 거래 조회·저장·화면 상태는 담당하지 않는다. */
 class CalculateBudgetSummaryUseCase {
+    /** 지출 합계의 표현 범위를 확인하고 계산한다. 조회·화면 로직을 섞지 않는다. */
+    fun fromExpenses(budgetAmount: Long?, expenses: List<Expense>): BudgetSummary {
+        require(budgetAmount == null || budgetAmount >= 0L)
+        val totals = ExpenseCategory.entries.associateWith { 0L }.toMutableMap()
+        val overflowed = mutableSetOf<ExpenseCategory>()
+        var total = 0L
+        var totalOverflow = false
+        for (expense in expenses) {
+            require(expense.amount >= 0L)
+            val categoryTotal = totals.getValue(expense.category)
+            if (expense.amount > Long.MAX_VALUE - categoryTotal) overflowed += expense.category
+            else if (expense.category !in overflowed) totals[expense.category] = categoryTotal + expense.amount
+            if (expense.amount > Long.MAX_VALUE - total) totalOverflow = true
+            else if (!totalOverflow) total += expense.amount
+        }
+        if (!totalOverflow) return invoke(budgetAmount, totals)
+        return BudgetSummary(budgetAmount, null, null, null,
+            ExpenseCategory.entries.map { category ->
+                BudgetCategorySummary(category, totals[category].takeUnless { category in overflowed }, null)
+            },
+            totalOverflow = true)
+    }
+
     operator fun invoke(
         budgetAmount: Long?,
         categoryTotals: Map<ExpenseCategory, Long>?,

@@ -1,6 +1,8 @@
 package com.woorisseum.core.data.di
 
 import com.woorisseum.core.data.local.WoorisseumDatabase
+import com.woorisseum.core.data.budget.LocalBudgetRepository
+import com.woorisseum.core.domain.budget.repository.BudgetRepository
 import com.woorisseum.core.data.transaction.LocalExpenseRepository
 import com.woorisseum.core.domain.transaction.repository.ExpenseRepository
 import com.woorisseum.core.data.transaction.card.InMemoryCardRepository
@@ -9,6 +11,7 @@ import com.woorisseum.core.domain.transaction.card.CardRepository
 import org.koin.dsl.module
 
 val dataModule = module {
+    single<BudgetRepository> { LocalBudgetRepository(get<WoorisseumDatabase>().budgetDao()) }
     single<ExpenseRepository> { LocalExpenseRepository(get()) }
     single<CardRepository> { LocalCardRepository(get<WoorisseumDatabase>().cardDao()) }
 }

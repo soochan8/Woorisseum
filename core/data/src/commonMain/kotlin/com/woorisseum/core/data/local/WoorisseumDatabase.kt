@@ -1,5 +1,6 @@
 package com.woorisseum.core.data.local
 
+import androidx.room3.AutoMigration
 import androidx.room3.ConstructedBy
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
@@ -8,10 +9,15 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-/** 카드·지출의 초기 스키마. 기능별 쓰기는 후속 Repository 구현에서 연결한다. */
-@Database(entities = [CardEntity::class, ExpenseEntity::class], version = 1, exportSchema = true)
+/** 월 예산을 추가하며 기존 카드·지출은 자동 마이그레이션으로 보존한다. */
+@Database(
+    entities = [CardEntity::class, ExpenseEntity::class, BudgetEntity::class],
+    version = 2, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+)
 @ConstructedBy(WoorisseumDatabaseConstructor::class)
 internal abstract class WoorisseumDatabase : RoomDatabase() {
+    abstract fun budgetDao(): BudgetDao
     abstract fun cardDao(): CardDao
     abstract fun expenseDao(): ExpenseDao
 }

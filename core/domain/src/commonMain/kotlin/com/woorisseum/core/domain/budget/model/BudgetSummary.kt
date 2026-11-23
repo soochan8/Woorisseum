@@ -9,6 +9,8 @@ data class BudgetSummary(
     val remainingAmount: Long?,
     val usageRatio: Double?,
     val categories: List<BudgetCategorySummary>,
+    /** 실제 집계 결과가 Long 범위를 넘어 합계·잔액·사용률을 표현할 수 없다. */
+    val totalOverflow: Boolean = false,
 )
 
 data class BudgetCategorySummary(
