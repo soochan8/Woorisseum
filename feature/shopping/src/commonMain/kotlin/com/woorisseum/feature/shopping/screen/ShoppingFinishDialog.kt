@@ -11,7 +11,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun ShoppingFinishDialog(completedCount: Int, remainingCount: Int, onCancel: () -> Unit, onConfirm: () -> Unit) {
-    AlertDialog(onDismissRequest = onCancel,
+    AlertDialog(onDismissRequest = onCancel, containerColor = MaterialTheme.colorScheme.surface,
         title = { Text(stringResource(Res.string.shopping_finish_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

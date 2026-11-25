@@ -188,6 +188,8 @@ private fun ShoppingItemRow(item: ShoppingItem, presence: ShoppingPresenceUiStat
         onDelete = { onBeforeAction(); onReveal(null); onIntent(ShoppingListUiIntent.DeleteItem(item.id)) }) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
             Checkbox(checked = item.purchased,
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primaryContainer,
+                    checkmarkColor = MaterialTheme.colorScheme.onPrimaryContainer),
                 onCheckedChange = { onBeforeAction(); onReveal(null); onIntent(ShoppingListUiIntent.SetPurchased(item.id, it)) },
                 modifier = Modifier.semantics { contentDescription = checkLabel })
             val editLabel = stringResource(Res.string.shopping_edit_item, item.name)

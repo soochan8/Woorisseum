@@ -249,7 +249,7 @@ private fun BudgetProgress(value: Float, known: Boolean, label: String) {
     if (known) {
         LinearProgressIndicator(progress = { value }, modifier = Modifier.fillMaxWidth().height(6.dp)
             .semantics { contentDescription = label },
-            color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.outlineVariant,
+            color = MaterialTheme.colorScheme.primaryContainer, trackColor = MaterialTheme.colorScheme.secondaryContainer,
             drawStopIndicator = {})
     } else {
         Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp))
