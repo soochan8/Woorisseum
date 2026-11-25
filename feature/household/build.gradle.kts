@@ -12,6 +12,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
+            implementation(libs.androidx.navigationevent.compose)
             implementation(libs.compose.material3)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
@@ -30,4 +31,12 @@ kotlin {
             implementation(libs.koin.test)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.woorisseum.feature.household.resources"
+}
+
+dependencies {
+    androidRuntimeClasspath(libs.compose.uiTooling)
 }
