@@ -8,6 +8,8 @@ import kotlinx.datetime.YearMonth
 /** 목록 화면이 그릴 값이다. 합계·필터·날짜별 그룹은 화면 바깥에서 준비한다. */
 data class ExpenseListUiState(
     val month: YearMonth,
+    // 사용자별 원본·프로필 연결 전에는 null이다. 임의로 기존 지출을 두 사람에게 배분하지 않는다.
+    val comparison: ExpenseComparisonUiModel? = null,
     val isSearchOpen: Boolean = false,
     val searchQuery: String = "",
     val searchPeriod: ExpenseSearchPeriod = ExpenseSearchPeriod(),

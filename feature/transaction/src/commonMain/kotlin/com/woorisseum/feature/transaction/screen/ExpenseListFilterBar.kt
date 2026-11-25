@@ -133,6 +133,7 @@ internal fun ExpenseListFilterBar(state: ExpenseListUiState, onIntent: (ExpenseL
     }
     if (showPayments) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showPayments = false },
             title = { Text(stringResource(Res.string.expense_payment_label)) },
             text = {

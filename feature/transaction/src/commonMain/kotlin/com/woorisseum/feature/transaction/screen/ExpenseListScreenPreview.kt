@@ -161,3 +161,43 @@ private fun ExpenseSearchCustomPeriodPreview() = WoorisseumTheme {
 private fun ExpenseSearchPeriodMenuPreview() = WoorisseumTheme {
     ExpenseSearchPeriodSheet(ExpenseSearchPeriod(), onSelect = {}, onDismiss = {})
 }
+
+/** 승인된 색상·이모지 비교 시안이다. 예시 금액·아바타는 운영 상태에 주입하지 않는다. */
+private fun previewComparison() = com.woorisseum.feature.transaction.model.ExpenseComparisonUiModel(
+    first = com.woorisseum.feature.transaction.model.ExpenseComparisonPersonUiModel("나", "🐱", "48,000", 0.96f),
+    second = com.woorisseum.feature.transaction.model.ExpenseComparisonPersonUiModel("짝꿍", "🐶", "36,500", 0.73f),
+    maximumAmountText = "50,000", midpointAmountText = "25,000",
+)
+
+private fun skyBlueExpensePreviewState() = ExpenseListUiState(
+    month = YearMonth(2026, 11), comparison = previewComparison(), totalAmountText = "84,500",
+    expenseCount = 3, hasExpensesInMonth = true, isExpenseSourceReady = true,
+    dayGroups = listOf(ExpenseDayUiModel(LocalDate(2026, 11, 25), "11월 25일", "84,500", listOf(
+        ExpenseItemUiModel("sky-1", "동네 마트", "56,000", ExpenseCategory.VARIABLE, "계좌이체"),
+        ExpenseItemUiModel("sky-2", "함께 먹은 저녁", "22,000", ExpenseCategory.VARIABLE, "현금"),
+        ExpenseItemUiModel("sky-3", "동네 카페", "6,500", ExpenseCategory.VARIABLE, "현금"),
+    ))),
+)
+
+@Preview(name = "스카이블루 · 지출과 이모지 비교", widthDp = 390, heightDp = 1000, locale = "ko")
+@Composable
+private fun SkyBlueExpensePreview() = WoorisseumTheme(darkTheme = false) {
+    ExpenseListScreen(skyBlueExpensePreviewState(), {})
+}
+
+@Preview(name = "스카이블루 · 이모지 비교 그래프", widthDp = 390, locale = "ko")
+@Composable
+private fun EmojiComparisonPreview() = WoorisseumTheme(darkTheme = false) {
+    androidx.compose.material3.Surface { ExpenseComparisonSection(previewComparison()) }
+}
+
+@Preview(name = "이모지 비교 · 320dp 큰 글씨", widthDp = 320, locale = "ko")
+@Composable
+private fun EmojiComparisonLargeFontPreview() = WoorisseumTheme(darkTheme = false) {
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    androidx.compose.runtime.CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, 1.5f),
+    ) {
+        androidx.compose.material3.Surface { ExpenseComparisonSection(previewComparison()) }
+    }
+}

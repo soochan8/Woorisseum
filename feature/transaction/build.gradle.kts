@@ -18,6 +18,7 @@ kotlin {
             implementation(project(":core:domain"))
             implementation(project(":core:designsystem"))
 
+            implementation(libs.compose.animationCore)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)

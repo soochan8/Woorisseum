@@ -97,6 +97,9 @@ fun ExpenseListScreen(
                     onClear = { onIntent(ExpenseListUiIntent.ClearSearch) },
                     requestFocus = requestSearchFocus, onFocusRequested = { requestSearchFocus = false })
             }
+            if (!state.isSearchOpen) item(key = "comparison", contentType = "comparison") {
+                ExpenseComparisonSection(state.comparison)
+            }
             item(key = "categories", contentType = "filters") {
                 ExpenseCategoryTabs(state.filters.category) { onIntent(ExpenseListUiIntent.SelectCategory(it)) }
             }
@@ -136,8 +139,9 @@ fun ExpenseListScreen(
                     }
                 }
                 items(group.expenses, key = { "expense:${it.id}" }, contentType = { "expense-row" }) { expense ->
-                    Box(Modifier.padding(horizontal = WoorisseumSpacing.screenHorizontal)) {
+                    Column(Modifier.padding(horizontal = WoorisseumSpacing.screenHorizontal)) {
                         ExpenseRow(expense) { onIntent(ExpenseListUiIntent.OpenExpense(expense.id)) }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -168,37 +172,28 @@ private fun ExpenseHeader(
         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(if (state.isSearchOpen) Res.string.expense_search_open else Res.string.expense_list_title), Modifier.weight(1f),
                 style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(Res.string.expense_app_name), style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
             IconButton(onClick = onToggleSearch) {
                 Icon(painterResource(if (state.isSearchOpen) Res.drawable.ic_close else Res.drawable.ic_search),
                     stringResource(if (state.isSearchOpen) Res.string.expense_search_close else Res.string.expense_search_open))
             }
         }
         if (!state.isSearchOpen) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(Res.string.expense_month, state.month.year, state.month.month.number),
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleSmall,
-                )
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { onIntent(ExpenseListUiIntent.PreviousMonth) }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_chevron_left),
-                        contentDescription = stringResource(Res.string.expense_previous_month),
-                        modifier = Modifier.size(20.dp),
-                    )
+                    Icon(painterResource(Res.drawable.ic_chevron_left), stringResource(Res.string.expense_previous_month),
+                        Modifier.size(20.dp))
                 }
+                Text(stringResource(Res.string.expense_month, state.month.year, state.month.month.number),
+                    Modifier.weight(1f), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = { onIntent(ExpenseListUiIntent.NextMonth) }) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_chevron_right),
-                        contentDescription = stringResource(Res.string.expense_next_month),
-                        modifier = Modifier.size(20.dp),
-                    )
+                    Icon(painterResource(Res.drawable.ic_chevron_right), stringResource(Res.string.expense_next_month),
+                        Modifier.size(20.dp))
                 }
             }
         }
+
         if (!state.isSearchOpen) {
             Text(
                 text = stringResource(Res.string.expense_month_total, state.month.month.number),
@@ -267,7 +262,7 @@ private fun ExpenseCategoryTabs(
                     Text(
                         text = categoryLabel(category),
                         style = MaterialTheme.typography.labelLarge,
-                        color = if (selected) MaterialTheme.colorScheme.onSurface
+                        color = if (selected) MaterialTheme.colorScheme.primary
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                         modifier = Modifier.padding(bottom = 12.dp),
@@ -286,7 +281,7 @@ private fun ExpenseCategoryTabs(
 @Composable
 private fun ExpenseRow(expense: ExpenseItemUiModel, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,
     ) {
