@@ -1,5 +1,9 @@
 package com.woorisseum.feature.transaction.screen
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,7 +11,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.currentCoroutineContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -24,6 +37,8 @@ import com.woorisseum.feature.transaction.model.ExpenseComparisonUiModel
 import com.woorisseum.feature.transaction.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.stringArrayResource
+import kotlin.math.PI
+import kotlin.math.sin
 import kotlin.math.roundToInt
 
 /** 월 전체 비교 영역이다. 사용자별 정보가 없으면 이모지 후보를 소개하고 실제 금액을 만들지 않는다. */
@@ -33,24 +48,41 @@ internal fun ExpenseComparisonSection(comparison: ExpenseComparisonUiModel?, mod
         .padding(top = 4.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(Res.string.expense_comparison_title), style = MaterialTheme.typography.titleMedium)
         if (comparison == null) {
-            EmojiPrompt()
+            BouncingEmojiPrompt()
         } else {
             ExpenseComparisonChart(comparison)
         }
     }
 }
 
-/** 데이터 연결 전에는 선택 가능한 기본 이모지의 분위기를 소개한다. */
+/** 장식용 모션은 화면 안에서만 관리하고, 화면을 벗어나면 중단한다. */
 @Composable
-private fun EmojiPrompt() {
+private fun BouncingEmojiPrompt() {
     val emojis = stringArrayResource(Res.array.expense_comparison_emoji_candidates)
+    val phase = remember { Animatable(0f) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val jumpHeight = with(LocalDensity.current) { 10.dp.toPx() }
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            phase.snapTo(0f)
+            // 애니메이션 사용 안 함 설정에서는 이모지를 정지 상태로 표시한다.
+            if (currentCoroutineContext()[MotionDurationScale]?.scaleFactor == 0f) return@repeatOnLifecycle
+            phase.animateTo(1f, infiniteRepeatable(tween(2400, easing = LinearEasing)))
+        }
+    }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FlowRow(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 8.dp).clearAndSetSemantics {},
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            emojis.forEach { emoji ->
-                Text(emoji, fontSize = 32.sp, lineHeight = 44.sp)
+            emojis.forEachIndexed { index, emoji ->
+                Text(emoji, fontSize = 32.sp, lineHeight = 44.sp,
+                    modifier = Modifier.graphicsLayer {
+                        // 한 주기 안에 짧게 점프한 뒤 쉰다. 측정 크기는 바꾸지 않아 목록이 흔들리지 않는다.
+                        val progress = (phase.value - index * 0.13f + 1f) % 1f
+                        translationY = if (progress < 0.26f)
+                            -jumpHeight * sin(PI * progress / 0.26).toFloat() else 0f
+                    })
             }
         }
         Text(stringResource(Res.string.expense_comparison_emoji_title),
