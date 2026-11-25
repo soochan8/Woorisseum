@@ -9,4 +9,6 @@
     <string name="management_fixed_description">월세·통신비·구독료 등 반복 지출 계획</string>
     <string name="management_shopping_categories">장보기 카테고리</string>
     <string name="management_shopping_categories_description">분류 추가·이름 수정·삭제</string>
+    <string name="management_together">함께 쓰기</string>
+    <string name="management_together_description">이름·이모지 설정과 초대 연결 준비</string>
 </resources>

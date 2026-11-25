@@ -1,5 +1,7 @@
 package com.woorisseum.navigation
 
+import com.woorisseum.feature.household.screen.TogetherRoute
+
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -49,6 +51,7 @@ import kotlin.time.Clock
 @Serializable private data object ExpenseListDestination
 @Serializable private data object ShoppingListDestination
 @Serializable private data object MonthlyBudgetDestination
+@Serializable private data object TogetherDestination
 @Serializable private data object ManagementDestination
 @Serializable private data object ShoppingCategoryDestination
 @Serializable private data object ShoppingHistoryDestination
@@ -194,6 +197,7 @@ internal fun AppNavigation() {
         composable<ManagementDestination> {
             AppTabScaffold(AppTab.Management, navController::selectTab) { screenModifier ->
                 ManagementScreen(
+                    onOpenTogether = { navController.navigate(TogetherDestination) { launchSingleTop = true } },
                     modifier = screenModifier,
                     onOpenShoppingCategories = { navController.navigate(ShoppingCategoryDestination) { launchSingleTop = true } },
                     onOpenCards = { navController.navigate(CardListDestination) { launchSingleTop = true } },
@@ -202,6 +206,9 @@ internal fun AppNavigation() {
                         navController.navigate(FixedExpenseListDestination(month.year, month.month.number)) { launchSingleTop = true }
                     })
             }
+        }
+        composable<TogetherDestination> {
+            TogetherRoute(onBack = navigateBack)
         }
         composable<ShoppingCategoryDestination> { entry ->
             val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }

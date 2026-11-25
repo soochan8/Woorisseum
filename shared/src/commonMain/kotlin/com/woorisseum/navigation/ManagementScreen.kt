@@ -15,12 +15,19 @@ import org.jetbrains.compose.resources.stringResource
 /** 업무 상태를 소유하지 않는 앱 메뉴다. 기능 화면은 shared의 이동 콜백으로 연다. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ManagementScreen(onOpenCards: () -> Unit, onOpenFixedExpenses: () -> Unit, onOpenShoppingCategories: () -> Unit, modifier: Modifier = Modifier) {
+internal fun ManagementScreen(onOpenTogether: () -> Unit, onOpenCards: () -> Unit, onOpenFixedExpenses: () -> Unit, onOpenShoppingCategories: () -> Unit, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { WoorisseumTopAppBar(title = { Text(stringResource(Res.string.nav_management), style = MaterialTheme.typography.headlineSmall) }) },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(vertical = 16.dp)) {
+            item(key = "together") {
+                ListItem(headlineContent = { Text(stringResource(Res.string.management_together)) },
+                    supportingContent = { Text(stringResource(Res.string.management_together_description)) },
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onOpenTogether))
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            }
             item(key = "cards") {
                 ListItem(headlineContent = { Text(stringResource(Res.string.management_cards)) },
                     supportingContent = { Text(stringResource(Res.string.management_cards_description)) },
