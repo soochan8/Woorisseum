@@ -10,8 +10,12 @@ data class TogetherUiState(
     val profileSubmitted: Boolean = false,
     val linkSubmitted: Boolean = false,
     val showPreparation: Boolean = false,
+    val isAuthenticating: Boolean = false,
+    val sessionError: SessionError? = null,
     val invitation: InvitationDisplay? = null,
 )
+
+enum class SessionError { Configuration, Unavailable }
 
 enum class TogetherStep { Start, Profile, Invite, Receive, Confirmation, Connected }
 enum class TogetherRole { Inviter, Invitee }

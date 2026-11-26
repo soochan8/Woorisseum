@@ -57,7 +57,7 @@ fun TogetherScreen(
                     Heading(Res.string.together_profile_title, Res.string.together_profile_body)
                     WoorisseumTextField(
                         value = state.name, onValueChange = { onIntent(TogetherUiIntent.ChangeName(it)) },
-                        modifier = Modifier.fillMaxWidth(), singleLine = true,
+                        modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !state.isAuthenticating,
                         label = { Text(stringResource(Res.string.together_name)) },
                         isError = state.profileSubmitted && state.name.isBlank(),
                         supportingText = {
@@ -71,7 +71,7 @@ fun TogetherScreen(
                         TogetherEmoji.entries.forEach { emoji ->
                             val label = stringResource(emoji.label())
                             WoorisseumFilterChip(
-                                selected = emoji == state.emoji,
+                                selected = emoji == state.emoji, enabled = !state.isAuthenticating,
                                 onClick = { focus.clearFocus(); onIntent(TogetherUiIntent.SelectEmoji(emoji)) },
                                 modifier = Modifier.semantics { contentDescription = label },
                                 label = { Text(stringResource(emoji.glyph()), style = MaterialTheme.typography.headlineSmall) },
@@ -79,7 +79,16 @@ fun TogetherScreen(
                         }
                     }
                     if (state.profileSubmitted && state.emoji == null) ErrorText(Res.string.together_emoji_error)
-                    Action(Res.string.together_next) { focus.clearFocus(); onIntent(TogetherUiIntent.ContinueProfile) }
+                    state.sessionError?.let {
+                        ErrorText(if (it == SessionError.Configuration) Res.string.together_config_error else Res.string.together_session_error)
+                    }
+                    WoorisseumPrimaryButton(
+                        onClick = { focus.clearFocus(); onIntent(TogetherUiIntent.ContinueProfile) },
+                        enabled = !state.isAuthenticating, modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        if (state.isAuthenticating) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                        else Text(stringResource(Res.string.together_next))
+                    }
                 }
                 TogetherStep.Invite -> {
                     Heading(Res.string.together_invite_title, Res.string.together_invite_body)

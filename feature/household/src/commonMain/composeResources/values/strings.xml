@@ -17,7 +17,7 @@
     <string name="together_invite_body">초대 링크를 상대에게 보내면, 상대가 자신의 이름과 이모지를 고른 뒤 참여할 수 있어요.</string>
     <string name="together_create">초대 링크 만들기</string>
     <string name="together_share">링크 공유하기</string>
-    <string name="together_not_ready">서버 연결 전이에요. 아직 링크를 만들거나 초대를 확인·수락할 수 없어요.</string>
+    <string name="together_not_ready">초대 기능을 준비하고 있어요. 아직 링크를 만들거나 초대를 확인·수락할 수 없어요.</string>
     <string name="together_no_link">아직 발급된 초대 링크가 없어요.</string>
     <string name="together_receive_title">받은 초대를 확인해요</string>
     <string name="together_receive_body">상대가 보낸 초대 링크를 붙여 넣어 주세요. 확인 후 누구의 초대인지 보고 참여하게 돼요.</string>
@@ -50,5 +50,7 @@
     <string name="emoji_panda_label">판다</string>
     <string name="emoji_frog_label">개구리</string>
     <string name="emoji_penguin_label">펭귄</string>
-    <string name="together_preparation_result">아직 서버와 연결되지 않아 진행할 수 없어요. 입력한 내용은 전송되지 않았어요.</string>
+    <string name="together_preparation_result">초대 기능이 아직 준비되지 않았어요. 링크를 발급하거나 상대와 연결하지 않았어요.</string>
+    <string name="together_config_error">서버 접속 설정이 없어 진행할 수 없어요.</string>
+    <string name="together_session_error">연결 준비를 완료하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요. 계속되면 서버 인증 설정을 확인해 주세요.</string>
 </resources>
