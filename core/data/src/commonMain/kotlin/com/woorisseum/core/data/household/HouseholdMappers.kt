@@ -48,3 +48,22 @@ internal fun SnapshotDto.toDomain(currentUserId: String): TogetherSnapshot {
     })
     return TogetherSnapshot(own, home, pending)
 }
+
+internal fun IssuedInvitationDto.toDomain(): IssuedInvitation {
+    verify(uuidPattern.matches(id) && uuidPattern.matches(householdId))
+    val code = InvitationCode.parse(token) ?: throw InvalidHouseholdResponse()
+    return IssuedInvitation(id, householdId, code, parseExpiry(expiresAt))
+}
+internal fun InvitationPreviewDto.toDomain(): InvitationPreview {
+    verify(uuidPattern.matches(id) && uuidPattern.matches(householdId) && ProfileName.isValid(inviter.name))
+    val emoji = ProfileEmoji.entries.firstOrNull { it.toCode() == inviter.emoji } ?: throw InvalidHouseholdResponse()
+    return InvitationPreview(id, householdId, inviter.name, emoji, parseExpiry(expiresAt))
+}
+internal fun AcceptedInvitationDto.toDomain(userId: String): Household {
+    verify(outcome in listOf("JOINED", "ALREADY_JOINED", "ALREADY_CONNECTED") && uuidPattern.matches(household.id))
+    val members = household.members.map { it.toDomain() }
+    verify(members.size == 2 && members.map { it.userId }.distinct().size == 2 && members.any { it.userId == userId })
+    return Household(household.id, members)
+}
+private fun parseExpiry(value: String): Instant = try { Instant.parse(value) }
+catch (_: IllegalArgumentException) { throw InvalidHouseholdResponse() }

@@ -18,6 +18,18 @@ internal class SupabaseHouseholdRepository(
     private val client: SupabaseClient,
     private val sessions: SessionRepository,
 ) : HouseholdRepository {
+    override suspend fun issueInvitation(requestId: String): AppResult<IssuedInvitation> = authenticated {
+        client.postgrest.rpc("create_household_invitation_v1", buildJsonObject { put("p_request_id", requestId) })
+            .decodeAs<RpcEnvelope<IssuedInvitationDto>>().result { it.toDomain() }
+    }
+    override suspend fun previewInvitation(code: InvitationCode): AppResult<InvitationPreview> = authenticated {
+        client.postgrest.rpc("preview_household_invitation_v1", buildJsonObject { put("p_token", code.value) })
+            .decodeAs<RpcEnvelope<InvitationPreviewDto>>().result { it.toDomain() }
+    }
+    override suspend fun acceptInvitation(code: InvitationCode): AppResult<Household> = authenticated { userId ->
+        client.postgrest.rpc("accept_household_invitation_v1", buildJsonObject { put("p_token", code.value) })
+            .decodeAs<RpcEnvelope<AcceptedInvitationDto>>().result { it.toDomain(userId) }
+    }
     override suspend fun load(): AppResult<TogetherSnapshot> = authenticated { userId ->
         val envelope = client.postgrest.rpc("get_together_state_v1").decodeAs<RpcEnvelope<SnapshotDto>>()
         envelope.result { it.toDomain(userId) }
@@ -63,6 +75,16 @@ private fun <T, R> RpcEnvelope<T>.result(mapper: (T) -> R): AppResult<R> {
     return AppResult.Failure(when (error.code) {
         "PROFILE_CONFLICT" -> AppError.Conflict
         "INVALID_ARGUMENT" -> AppError.InvalidInput
+        "PROFILE_REQUIRED" -> AppError.Invitation(InvitationFailure.ProfileRequired)
+        "INVITATION_NOT_FOUND" -> AppError.Invitation(InvitationFailure.NotFound)
+        "SELF_INVITATION" -> AppError.Invitation(InvitationFailure.Self)
+        "INVITATION_USED" -> AppError.Invitation(InvitationFailure.Used)
+        "INVITATION_REVOKED" -> AppError.Invitation(InvitationFailure.Revoked)
+        "INVITATION_EXPIRED" -> AppError.Invitation(InvitationFailure.Expired)
+        "HOUSEHOLD_FULL" -> AppError.Invitation(InvitationFailure.Full)
+        "ALREADY_CONNECTED" -> AppError.Invitation(InvitationFailure.AlreadyConnected)
+        "CURRENT_HOUSEHOLD_HAS_DATA" -> AppError.Invitation(InvitationFailure.CurrentHouseholdHasData)
+        "ISSUANCE_RESULT_UNAVAILABLE" -> AppError.Invitation(InvitationFailure.IssuanceResultUnavailable)
         else -> AppError.Remote(RemoteFailure.InvalidResponse)
     })
 }

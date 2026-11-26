@@ -27,3 +27,18 @@ import kotlinx.serialization.Serializable
     val status: String,
     @SerialName("expires_at") val expiresAt: String,
 )
+
+@Serializable internal data class IssuedInvitationDto(
+    @SerialName("invitation_id") val id: String,
+    @SerialName("household_id") val householdId: String,
+    val token: String,
+    @SerialName("expires_at") val expiresAt: String,
+)
+@Serializable internal data class InviterDto(@SerialName("display_name") val name: String, @SerialName("emoji_code") val emoji: String)
+@Serializable internal data class InvitationPreviewDto(
+    @SerialName("invitation_id") val id: String,
+    @SerialName("household_id") val householdId: String,
+    val inviter: InviterDto,
+    @SerialName("expires_at") val expiresAt: String,
+)
+@Serializable internal data class AcceptedInvitationDto(val outcome: String, val household: HouseholdDto)

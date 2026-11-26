@@ -17,6 +17,9 @@ data class TogetherSnapshot(
 }
 
 interface HouseholdRepository {
+    suspend fun issueInvitation(requestId: String): AppResult<IssuedInvitation>
+    suspend fun previewInvitation(code: InvitationCode): AppResult<InvitationPreview>
+    suspend fun acceptInvitation(code: InvitationCode): AppResult<Household>
     suspend fun load(): AppResult<TogetherSnapshot>
     suspend fun saveProfile(name: String, emoji: ProfileEmoji, expectedRevision: Long?): AppResult<HouseholdProfile>
 }

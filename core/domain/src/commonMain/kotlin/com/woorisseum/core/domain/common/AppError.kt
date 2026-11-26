@@ -2,6 +2,7 @@ package com.woorisseum.core.domain.common
 
 /** data가 외부 구현의 실패를 변환하는 공통 오류 계약이다. 표시 문구는 feature가 결정한다. */
 sealed interface AppError {
+    data class Invitation(val reason: InvitationFailure) : AppError
     /** 서버 통신·인증 실패를 외부 예외 없이 전달한다. */
     data class Remote(val reason: RemoteFailure) : AppError
 
@@ -20,3 +21,8 @@ sealed interface AppError {
 
 /** UI 문구가 아닌 원격 작업 실패의 의미다. */
 enum class RemoteFailure { Network, Authentication, Permission, RateLimited, Unavailable, InvalidResponse, Configuration }
+
+/** 서버의 초대 업무 실패를 SDK 코드와 분리한다. */
+enum class InvitationFailure {
+    ProfileRequired, NotFound, Self, Used, Revoked, Expired, Full, AlreadyConnected, CurrentHouseholdHasData, IssuanceResultUnavailable
+}

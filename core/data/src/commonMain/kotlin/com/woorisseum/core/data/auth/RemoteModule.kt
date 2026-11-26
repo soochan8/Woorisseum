@@ -49,6 +49,9 @@ private class UnconfiguredSessionRepository : SessionRepository {
 }
 
 private class UnconfiguredHouseholdRepository : HouseholdRepository {
+    override suspend fun issueInvitation(requestId: String): AppResult<IssuedInvitation> = AppResult.Failure(AppError.Remote(RemoteFailure.Configuration))
+    override suspend fun previewInvitation(code: InvitationCode): AppResult<InvitationPreview> = AppResult.Failure(AppError.Remote(RemoteFailure.Configuration))
+    override suspend fun acceptInvitation(code: InvitationCode): AppResult<Household> = AppResult.Failure(AppError.Remote(RemoteFailure.Configuration))
     override suspend fun load(): AppResult<TogetherSnapshot> = AppResult.Failure(AppError.Remote(RemoteFailure.Configuration))
     override suspend fun saveProfile(name: String, emoji: ProfileEmoji, expectedRevision: Long?): AppResult<HouseholdProfile> =
         AppResult.Failure(AppError.Remote(RemoteFailure.Configuration))
