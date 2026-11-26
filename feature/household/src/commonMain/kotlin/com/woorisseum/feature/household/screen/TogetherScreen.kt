@@ -6,7 +6,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import com.woorisseum.core.domain.household.InvitationCode
+import com.woorisseum.core.domain.common.InvitationFailure
 import androidx.compose.runtime.key
 import com.woorisseum.core.domain.household.ProfileName
 import androidx.compose.ui.Modifier
@@ -28,8 +30,19 @@ fun TogetherScreen(
     onIntent: (TogetherUiIntent) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    codeCopied: Boolean = false,
+    onShareCode: (String) -> Unit = {},
+    onCopyCode: (String) -> Unit = {},
 ) {
     val focus = LocalFocusManager.current
+    val busy = state.isSaving || state.isLoading
+    if (state.reissueConfirmation) AlertDialog(
+        onDismissRequest = { onIntent(TogetherUiIntent.CancelReissue) },
+        title = { Text(stringResource(Res.string.together_reissue)) },
+        text = { Text(stringResource(Res.string.together_reissue_warning)) },
+        confirmButton = { WoorisseumTextButton(onClick = { onIntent(TogetherUiIntent.ConfirmReissue) }) { Text(stringResource(Res.string.together_reissue)) } },
+        dismissButton = { WoorisseumTextButton(onClick = { onIntent(TogetherUiIntent.CancelReissue) }) { Text(stringResource(Res.string.together_cancel)) } },
+    )
     Scaffold(
         modifier = modifier.imePadding(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -61,6 +74,14 @@ fun TogetherScreen(
                     }
                 }
             }
+            state.invitationFailure?.let {
+                ErrorText(it.text())
+                if (!busy) WoorisseumTextButton(onClick = { onIntent(TogetherUiIntent.Refresh) }) {
+                    Text(stringResource(Res.string.together_refresh))
+                }
+            }
+            if (state.issuanceUncertain && !busy) Notice(Res.string.together_issue_uncertain)
+            if (state.acceptanceUncertain && !busy) Notice(Res.string.together_accept_uncertain)
             when (state.step) {
                 TogetherStep.Start -> {
                     Heading(Res.string.together_start_title, Res.string.together_start_body)
@@ -129,29 +150,36 @@ fun TogetherScreen(
                 TogetherStep.Invite -> {
                     Heading(Res.string.together_invite_title, Res.string.together_invite_body)
                     Person(state.name, state.emoji)
-                    Notice(if (state.showPreparation) Res.string.together_preparation_result else Res.string.together_not_ready)
-                    Text(stringResource(Res.string.together_no_link), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Action(Res.string.together_create) { onIntent(TogetherUiIntent.RequestInvite) }
-                    WoorisseumSecondaryButton(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(Res.string.together_share))
+                    state.issued?.let { issued ->
+                        Text(issued.code.value, style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(Res.string.together_expires_at, issued.expiresAt.toString()), style = MaterialTheme.typography.bodySmall)
+                        if (state.expired) Notice(Res.string.together_expired)
+                        Action(Res.string.together_share, enabled = !busy && !state.expired) { onShareCode(issued.code.value) }
+                        WoorisseumSecondaryButton(onClick = { onCopyCode(issued.code.value) }, enabled = !busy && !state.expired, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(if (codeCopied) Res.string.together_copied else Res.string.together_copy))
+                        }
+                    } ?: Text(stringResource(Res.string.together_code_missing), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Action(if (state.issued != null || state.snapshot?.invitation != null || state.issuanceUncertain) Res.string.together_reissue else Res.string.together_create, enabled = !busy) { onIntent(TogetherUiIntent.RequestInvite) }
+                    WoorisseumTextButton(onClick = { onIntent(TogetherUiIntent.Refresh) }, enabled = !busy) {
+                        Text(stringResource(Res.string.together_refresh))
                     }
                 }
                 TogetherStep.Receive -> {
                     Heading(Res.string.together_receive_title, Res.string.together_receive_body)
                     Person(state.name, state.emoji)
                     WoorisseumTextField(
-                        value = state.link, onValueChange = { onIntent(TogetherUiIntent.ChangeLink(it)) },
-                        modifier = Modifier.fillMaxWidth(), singleLine = true,
+                        value = state.codeInput, onValueChange = { onIntent(TogetherUiIntent.ChangeCode(it)) },
+                        modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = !busy,
                         label = { Text(stringResource(Res.string.together_link)) },
-                        isError = state.linkSubmitted && state.link.isBlank(),
+                        isError = state.codeSubmitted && InvitationCode.parse(state.codeInput) == null,
                         supportingText = {
-                            if (state.linkSubmitted && state.link.isBlank()) ErrorText(Res.string.together_link_error)
+                            if (state.codeSubmitted && InvitationCode.parse(state.codeInput) == null) ErrorText(Res.string.together_link_error)
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { focus.clearFocus(); onIntent(TogetherUiIntent.CheckInvitation) }),
                     )
-                    Action(Res.string.together_check) { focus.clearFocus(); onIntent(TogetherUiIntent.CheckInvitation) }
-                    Notice(if (state.showPreparation) Res.string.together_preparation_result else Res.string.together_not_ready)
+                    Action(Res.string.together_check, enabled = !busy) { focus.clearFocus(); onIntent(TogetherUiIntent.CheckInvitation) }
+
                 }
                 TogetherStep.Confirmation -> {
                     Text(stringResource(Res.string.together_confirmation_title), style = MaterialTheme.typography.headlineSmall)
@@ -160,15 +188,15 @@ fun TogetherScreen(
                         when (invitation.status) {
                             InvitationStatus.Available -> {
                                 Person(state.name, state.emoji)
-                                Action(Res.string.together_accept) { onIntent(TogetherUiIntent.AcceptInvitation) }
+                                if (state.expired) Notice(Res.string.together_expired)
+                                Action(Res.string.together_accept, enabled = !busy && !state.expired && state.invitationFailure == null) { onIntent(TogetherUiIntent.AcceptInvitation) }
                             }
                             InvitationStatus.Expired -> Notice(Res.string.together_expired)
                             InvitationStatus.Used -> Notice(Res.string.together_used)
                             InvitationStatus.Full -> Notice(Res.string.together_full)
                         }
                     }
-                    if (state.showPreparation) Notice(Res.string.together_preparation_result)
-                    WoorisseumSecondaryButton(onClick = { onIntent(TogetherUiIntent.Back) }, modifier = Modifier.fillMaxWidth()) {
+                    WoorisseumSecondaryButton(onClick = { onIntent(TogetherUiIntent.Back) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.together_edit_link))
                     }
                 }
@@ -255,4 +283,17 @@ private fun TogetherOperationError.text(): StringResource = when (this) {
     TogetherOperationError.InvalidInput -> Res.string.together_profile_invalid
     TogetherOperationError.Storage -> Res.string.together_storage_error
     TogetherOperationError.Unavailable -> Res.string.together_server_error
+}
+
+private fun InvitationFailure.text(): StringResource = when (this) {
+    InvitationFailure.ProfileRequired -> Res.string.together_profile_missing
+    InvitationFailure.NotFound -> Res.string.together_invitation_missing
+    InvitationFailure.Self -> Res.string.together_invitation_self
+    InvitationFailure.Used -> Res.string.together_used
+    InvitationFailure.Revoked -> Res.string.together_invitation_revoked
+    InvitationFailure.Expired -> Res.string.together_expired
+    InvitationFailure.Full -> Res.string.together_full
+    InvitationFailure.AlreadyConnected -> Res.string.together_already_connected
+    InvitationFailure.CurrentHouseholdHasData -> Res.string.together_space_has_data
+    InvitationFailure.IssuanceResultUnavailable -> Res.string.together_issue_uncertain
 }
