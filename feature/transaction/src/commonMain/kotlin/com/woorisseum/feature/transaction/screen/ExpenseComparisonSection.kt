@@ -2,7 +2,6 @@ package com.woorisseum.feature.transaction.screen
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -21,6 +20,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -59,15 +63,26 @@ internal fun ExpenseComparisonSection(comparison: ExpenseComparisonUiModel?, mod
 @Composable
 private fun BouncingEmojiPrompt() {
     val emojis = stringArrayResource(Res.array.expense_comparison_emoji_candidates)
-    val phase = remember { Animatable(0f) }
+    val phases = remember(emojis) { List(emojis.size) { Animatable(0f) } }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val jumpHeight = with(LocalDensity.current) { 10.dp.toPx() }
-    LaunchedEffect(lifecycle) {
+    LaunchedEffect(lifecycle, phases) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            phase.snapTo(0f)
-            // 애니메이션 사용 안 함 설정에서는 이모지를 정지 상태로 표시한다.
+            phases.forEach { it.snapTo(0f) }
             if (currentCoroutineContext()[MotionDurationScale]?.scaleFactor == 0f) return@repeatOnLifecycle
-            phase.animateTo(1f, infiniteRepeatable(tween(2400, easing = LinearEasing)))
+            coroutineScope {
+                phases.forEach { phase ->
+                    launch {
+                        // 각 이모지가 독립적으로 쉬고 점프한다. 화면상 순서와 시작 시점을 연결하지 않는다.
+                        while (isActive) {
+                            delay(Random.nextLong(400L, 2400L))
+                            if (currentCoroutineContext()[MotionDurationScale]?.scaleFactor == 0f) break
+                            phase.animateTo(1f, tween(Random.nextInt(420, 720), easing = LinearEasing))
+                            phase.snapTo(0f)
+                        }
+                    }
+                }
+            }
         }
     }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
@@ -79,9 +94,8 @@ private fun BouncingEmojiPrompt() {
                 Text(emoji, fontSize = 32.sp, lineHeight = 44.sp,
                     modifier = Modifier.graphicsLayer {
                         // 한 주기 안에 짧게 점프한 뒤 쉰다. 측정 크기는 바꾸지 않아 목록이 흔들리지 않는다.
-                        val progress = (phase.value - index * 0.13f + 1f) % 1f
-                        translationY = if (progress < 0.26f)
-                            -jumpHeight * sin(PI * progress / 0.26).toFloat() else 0f
+                        val progress = phases[index].value
+                        translationY = -jumpHeight * sin(PI * progress).toFloat()
                     })
             }
         }
