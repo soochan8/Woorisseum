@@ -1,6 +1,8 @@
 package com.woorisseum.navigation
 
 import com.woorisseum.feature.household.screen.TogetherRoute
+import com.woorisseum.invitation.InvitationLinks
+import com.woorisseum.invitation.rememberInvitationShare
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -101,6 +103,14 @@ private const val SCREEN_TRANSITION_MILLIS = 220
 @Composable
 internal fun AppNavigation() {
     val navController = rememberNavController()
+    val incoming by InvitationLinks.pending.collectAsStateWithLifecycle()
+    val share = rememberInvitationShare()
+    val shareTemplate = stringResource(Res.string.invitation_share_message)
+    LaunchedEffect(incoming?.id) {
+        if (incoming != null && navController.currentDestination?.hasRoute<TogetherDestination>() != true) {
+            navController.navigate(TogetherDestination) { launchSingleTop = true }
+        }
+    }
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
@@ -208,7 +218,13 @@ internal fun AppNavigation() {
             }
         }
         composable<TogetherDestination> {
-            TogetherRoute(onBack = navigateBack)
+            TogetherRoute(onBack = navigateBack,
+                incomingId = incoming?.id,
+                incomingCode = incoming?.code?.value,
+                onIncomingHandled = InvitationLinks::handled,
+                onShareInvitation = { code ->
+                    InvitationLinks.create(code)?.let { link -> share(shareTemplate.replace("{link}", link).replace("{code}", code)) }
+                })
         }
         composable<ShoppingCategoryDestination> { entry ->
             val sessionEntry = remember(entry) { navController.getBackStackEntry<AppGraph>() }
