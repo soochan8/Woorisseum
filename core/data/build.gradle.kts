@@ -11,6 +11,7 @@ kotlin {
             implementation(project(":core:domain"))
 
             implementation(libs.supabase.auth)
+            implementation(libs.supabase.postgrest)
             implementation(libs.ktor.client.core)
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.coroutines.core)

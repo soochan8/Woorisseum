@@ -195,6 +195,7 @@ private fun ShoppingListUiState.openEditor(id: String): ShoppingListUiState {
         categoryFilter = if (categoryFilter.matches(item)) categoryFilter else ShoppingCategoryFilter.All)
 }
 private fun AppError.toUi() = when (this) {
+    is AppError.Remote -> ShoppingStorageError.STORAGE
     AppError.Storage -> ShoppingStorageError.STORAGE
     AppError.NotFound -> ShoppingStorageError.NOT_FOUND
     AppError.Conflict -> ShoppingStorageError.CONFLICT

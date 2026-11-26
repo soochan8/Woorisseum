@@ -6,6 +6,7 @@ import com.woorisseum.core.domain.common.AppError
 enum class ExpenseOperationError { STORAGE, NOT_FOUND, CONFLICT, INVALID_INPUT }
 
 internal fun AppError.toExpenseOperationError(): ExpenseOperationError = when (this) {
+    is AppError.Remote -> ExpenseOperationError.STORAGE
     AppError.Storage -> ExpenseOperationError.STORAGE
     AppError.NotFound -> ExpenseOperationError.NOT_FOUND
     AppError.Conflict -> ExpenseOperationError.CONFLICT

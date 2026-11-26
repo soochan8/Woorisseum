@@ -1,5 +1,7 @@
 package com.woorisseum.core.data.auth
 
+import com.woorisseum.core.domain.common.RemoteFailure
+import com.woorisseum.core.data.remote.toRemoteError
 import com.woorisseum.core.domain.auth.SessionRepository
 import com.woorisseum.core.domain.auth.UserSession
 import com.woorisseum.core.domain.common.AppError
@@ -44,14 +46,14 @@ internal class SupabaseSessionRepository(private val client: SupabaseClient) : S
             throw cancelled
         } catch (_: SessionStorageException) {
             AppResult.Failure(AppError.Storage)
-        } catch (_: RestException) {
-            AppResult.Failure(AppError.Storage)
+        } catch (failure: RestException) {
+            AppResult.Failure(failure.toRemoteError())
         } catch (_: HttpRequestException) {
-            AppResult.Failure(AppError.Storage)
+            AppResult.Failure(AppError.Remote(RemoteFailure.Network))
         } catch (_: HttpRequestTimeoutException) {
-            AppResult.Failure(AppError.Storage)
+            AppResult.Failure(AppError.Remote(RemoteFailure.Network))
         } catch (_: IOException) {
-            AppResult.Failure(AppError.Storage)
+            AppResult.Failure(AppError.Remote(RemoteFailure.Network))
         }
     }
 }
