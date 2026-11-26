@@ -17,11 +17,11 @@ fun TogetherRoute(onBack: () -> Unit, viewModel: TogetherViewModel = koinViewMod
     val focus = LocalFocusManager.current
     val back: () -> Unit = {
         focus.clearFocus()
-        if (state.step == TogetherStep.Start) onBack() else viewModel.onIntent(TogetherUiIntent.Back)
+        if (state.step == TogetherStep.Start || state.step == TogetherStep.Connected) onBack() else viewModel.onIntent(TogetherUiIntent.Back)
     }
     NavigationBackHandler(
         state = rememberNavigationEventState(NavigationEventInfo.None),
-        isBackEnabled = state.step != TogetherStep.Start,
+        isBackEnabled = state.step != TogetherStep.Start && state.step != TogetherStep.Connected,
         onBackCompleted = back,
     )
     TogetherScreen(state = state, onIntent = viewModel::onIntent, onBack = back)

@@ -7,9 +7,9 @@
     <string name="together_receive">초대받았어요</string>
     <string name="together_local_notice">기존 기록은 그대로 유지돼요. 연결만으로 기록이 옮겨지거나 공유되지 않아요.</string>
     <string name="together_profile_title">나를 어떻게 보여줄까요?</string>
-    <string name="together_profile_body">두 사람을 구분할 이름과 이모지를 골라 주세요. 이번 입력은 화면을 나가면 저장되지 않아요.</string>
+    <string name="together_profile_body">두 사람을 구분할 이름과 이모지를 골라 주세요. 다음을 누르면 서버에 저장돼요.</string>
     <string name="together_name">내 이름</string>
-    <string name="together_name_error">이름을 입력해 주세요.</string>
+    <string name="together_name_error">이름을 앞뒤 공백을 제외하고 1~30자로 입력해 주세요.</string>
     <string name="together_emoji_title">내 이모지</string>
     <string name="together_emoji_error">이모지를 하나 골라 주세요.</string>
     <string name="together_next">다음</string>
@@ -53,4 +53,22 @@
     <string name="together_preparation_result">초대 기능이 아직 준비되지 않았어요. 링크를 발급하거나 상대와 연결하지 않았어요.</string>
     <string name="together_config_error">서버 접속 설정이 없어 진행할 수 없어요.</string>
     <string name="together_session_error">연결 준비를 완료하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요. 계속되면 서버 인증 설정을 확인해 주세요.</string>
+    <string name="together_loading">저장된 상태를 확인하고 있어요.</string>
+    <string name="together_refresh">상태 다시 확인</string>
+    <string name="together_edit_profile">내 프로필 수정</string>
+    <string name="together_waiting">상대와 연결을 기다리고 있어요.</string>
+    <string name="together_saved_refresh_failed">프로필은 저장됐어요. 연결 상태를 다시 확인해 주세요.</string>
+    <string name="together_profile_conflict">다른 곳에서 프로필이 변경됐어요. 입력은 그대로 보관했어요. 최신 정보를 확인한 뒤 선택해 주세요.</string>
+    <string name="together_latest_profile">현재 저장된 프로필</string>
+    <string name="together_profile_missing">현재 저장된 프로필이 없어요.</string>
+    <string name="together_use_latest">최신 프로필 사용</string>
+    <string name="together_keep_draft">내 입력으로 다시 저장</string>
+    <string name="together_network_error">인터넷 연결을 확인한 뒤 다시 시도해 주세요.</string>
+    <string name="together_auth_error">사용자 인증을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.</string>
+    <string name="together_permission_error">요청 권한을 확인하지 못했어요.</string>
+    <string name="together_rate_limit_error">요청이 많아요. 잠시 후 다시 시도해 주세요.</string>
+    <string name="together_response_error">서버 응답을 확인하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="together_profile_invalid">이름과 이모지 입력을 확인해 주세요.</string>
+    <string name="together_storage_error">사용자 정보를 안전하게 보관하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="together_server_error">서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.</string>
 </resources>

@@ -1,6 +1,9 @@
 package com.woorisseum.feature.household.model
 
-/** 서버 연동 전의 입력 초안이다. 연결·저장된 프로필을 의미하지 않는다. */
+import com.woorisseum.core.domain.household.ProfileEmoji
+import com.woorisseum.core.domain.household.TogetherSnapshot
+
+/** 입력 초안과 마지막으로 확인한 서버 상태를 구분한다. 조회 실패를 미연결로 바꾸지 않는다. */
 data class TogetherUiState(
     val step: TogetherStep = TogetherStep.Start,
     val role: TogetherRole? = null,
@@ -10,16 +13,21 @@ data class TogetherUiState(
     val profileSubmitted: Boolean = false,
     val linkSubmitted: Boolean = false,
     val showPreparation: Boolean = false,
-    val isAuthenticating: Boolean = false,
-    val sessionError: SessionError? = null,
+    val isSaving: Boolean = false,
+    val isLoading: Boolean = false,
+    val snapshot: TogetherSnapshot? = null,
+    val operationError: TogetherOperationError? = null,
+    val savedAwaitingRefresh: Boolean = false,
+    val hasConflict: Boolean = false,
+    val conflictReady: Boolean = false,
     val invitation: InvitationDisplay? = null,
 )
 
-enum class SessionError { Configuration, Unavailable }
+enum class TogetherOperationError { Configuration, Network, Authentication, Permission, RateLimited, Unavailable, InvalidResponse, Conflict, InvalidInput, Storage }
 
 enum class TogetherStep { Start, Profile, Invite, Receive, Confirmation, Connected }
 enum class TogetherRole { Inviter, Invitee }
-enum class TogetherEmoji { Cat, Dog, Rabbit, Bear, Fox, Panda, Frog, Penguin }
+typealias TogetherEmoji = ProfileEmoji
 enum class InvitationStatus { Available, Expired, Used, Full }
 
 /** 서버 확인 결과를 그릴 표시 모델. 현재는 Preview에서만 주입한다. */
@@ -34,6 +42,10 @@ sealed interface TogetherUiIntent {
     data class ChangeName(val value: String) : TogetherUiIntent
     data class SelectEmoji(val emoji: TogetherEmoji) : TogetherUiIntent
     data class ChangeLink(val value: String) : TogetherUiIntent
+    data object Refresh : TogetherUiIntent
+    data object EditProfile : TogetherUiIntent
+    data object UseServerProfile : TogetherUiIntent
+    data object SaveDraftOverLatest : TogetherUiIntent
     data object ContinueProfile : TogetherUiIntent
     data object RequestInvite : TogetherUiIntent
     data object CheckInvitation : TogetherUiIntent
